@@ -47,9 +47,9 @@ class LLMSettings(_BaseSettings):
        Configuration for LLM provider.
 
        Attributes:
-           llm_api_key: API key used to authenticate with the LLM service.
+           api_key: API key used to authenticate with the LLM service.
        """
-    llm_api_key: str
+    api_key: str
 
 
 class AdapterSettings(_BaseSettings):
