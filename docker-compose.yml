@@ -10,6 +10,21 @@ services:
       - "5433:5432"
     volumes:
       - pythia_postgres_data:/var/lib/postgresql/data
+    restart: always
+
+  pythia_api:
+    build: .
+    container_name: pythia_api
+    depends_on:
+      - pythia_db
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env
+    environment:
+      - DB_HOST=pythia_db
+      - DB_PORT=5432
+    restart: always
 
 volumes:
   pythia_postgres_data:

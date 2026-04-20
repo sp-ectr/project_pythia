@@ -12,6 +12,7 @@ sys.path.insert(0, dirname(dirname(abspath(__file__))))
 from project_pythia.app.models.base import Base
 from project_pythia.app.core.config import settings
 from project_pythia.app.models.user import User
+from project_pythia.app.models.readings import Reading
 
 from alembic import context
 
