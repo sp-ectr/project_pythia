@@ -47,7 +47,6 @@ async def ask_oracle(
     oracle_res = await llm_service.get_reading(payload.question, spread_text)
 
     if not oracle_res.is_safe:
-
         user.strikes += 1
         await session.commit()
 
@@ -80,5 +79,3 @@ async def ask_oracle(
         is_safe=True,
         interpretation=oracle_res
     )
-
-
