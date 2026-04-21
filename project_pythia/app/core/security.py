@@ -65,7 +65,7 @@ def _validate_init_data(init_data: str) -> dict:
         raise HTTPException(401, "Invalid user payload")
 
 # Ждем initData в заголовке
-async def user_check(
+async def get_user(
         x_tg_data: str = Header(..., alias="X-TG-Data"), session: AsyncSession = Depends(get_session)
 ) -> User:
     user_data = _validate_init_data(x_tg_data)
