@@ -1,20 +1,42 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Depends
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import select
+from starlette.middleware.cors import CORSMiddleware
 
-# Импортируем наш роутер с логикой
+from project_pythia.app.core.limiter import limiter
+from slowapi.middleware import SlowAPIMiddleware
 from project_pythia.app.api.oracle import router as oracle_router
+from project_pythia.app.core.db import get_session
+from project_pythia.app.models.user import User
+from project_pythia.app.core.security import get_user
 
-# Инициализируем само приложение
-app = FastAPI(
-    title="Pythia Tarot API",
-    description="Stateless Tarot Oracle with Gemini",
-    version="1.0.0"
+app = FastAPI(title="Pythia Tarot API")
+
+app.state.limiter = limiter
+app.add_middleware(SlowAPIMiddleware)
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
-# Подключаем роутер.
-# Теперь все эндпоинты из oracle_router будут доступны по адресу /api/oracle/...
 app.include_router(oracle_router, prefix="/api")
 
-# Делаем простой эндпоинт для проверки, что сервер вообще живой
-@app.get("/health", tags=["System"])
-async def health_check():
-    return {"status": "alive", "message": "Пифия слушает..."}
+
+@app.get("/health")
+async def health():
+    return {"status": "alive"}
+
+
+# ФЕЙКОВАЯ АВТОРИЗАЦИЯ ДЛЯ ТЕСТОВ В SWAGGER
+async def mock_auth(session: AsyncSession = Depends(get_session)) -> User:
+    result = await session.execute(select(User).where(User.tg_id == 471019051))
+    user = result.scalar_one_or_none()
+    if not user:
+        raise RuntimeError("нет тот user")
+    return user
+
+
+app.dependency_overrides[get_user] = mock_auth  # type: ignore[attr-defined]

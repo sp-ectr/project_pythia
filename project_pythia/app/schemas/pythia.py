@@ -5,9 +5,16 @@ from pydantic import BaseModel, Field, ConfigDict
 
 class CardInterpretation(BaseModel):
     position: int = Field(description="Position number (1–10)")
+    position_meaning: str = Field(description="Meaning of the position in the Celtic Cross spread")
+
     card_id: int = Field(description="Card ID")
+    card_name: str = Field(description="Name of the card")
+
     is_reversed: bool = Field(description="Was the card reversed in this position?")
-    text: str = Field(description="Interpretation considering the card's orientation (upright or reversed)")
+
+    text: str = Field(
+        description="Interpretation considering the card's orientation (upright or reversed)"
+    )
 
 
 class OracleResponse(BaseModel):
@@ -30,5 +37,6 @@ class AskPythiaResponse(BaseModel):
     interpretation: OracleResponse | None = None
 
 
-class ReadingResponse(BaseModel):
-    pass
+class SendChatResponse(BaseModel):
+    status: str
+    message: str

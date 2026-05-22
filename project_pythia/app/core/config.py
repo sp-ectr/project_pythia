@@ -52,7 +52,7 @@ class LLMSettings(_BaseSettings):
     api_key: str
 
 
-class AdapterSettings(_BaseSettings):
+class BotAdapterSettings(_BaseSettings):
     """
        Configuration for bot adapter (e.g., Telegram).
 
@@ -60,6 +60,15 @@ class AdapterSettings(_BaseSettings):
            bot_token: Authentication token for the bot platform.
        """
     bot_token: str
+
+class WisperGroqSettings(_BaseSettings):
+    """
+    Configuration for Groq Whisper integration.
+
+    Attributes:
+    groq_token: API token used for authenticating requests to Groq Whisper service.
+    """
+    groq_token: str
 
 
 class Settings(_BaseSettings):
@@ -72,10 +81,11 @@ class Settings(_BaseSettings):
         Attributes:
             postgres: PostgreSQL configuration.
             llm: LLM client configuration.
-            adapter: Bot adapter configuration.
+            bot: Bot adapter configuration.
         """
     postgres: PostgresSettings = Field(default_factory=PostgresSettings)
     llm: LLMSettings = Field(default_factory=LLMSettings)
-    adapter: AdapterSettings = Field(default_factory=AdapterSettings)
+    bot: BotAdapterSettings = Field(default_factory=BotAdapterSettings)
+    wisper: WisperGroqSettings = Field(default_factory=WisperGroqSettings)
 
 settings = Settings()

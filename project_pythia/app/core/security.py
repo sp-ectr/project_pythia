@@ -35,7 +35,7 @@ def _validate_init_data(init_data: str) -> dict:
     # Вычисляем секретный ключ по доке телеграмма
     secret_key = hmac.new(
         key=b"WebAppData",
-        msg=settings.adapter.bot_token.encode(),
+        msg=settings.bot.bot_token.encode(),
         digestmod=hashlib.sha256
     ).digest()
 
