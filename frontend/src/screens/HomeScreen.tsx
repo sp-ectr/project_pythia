@@ -10,8 +10,9 @@ import { InputScene } from "../scenes/InputScene";
 import { LoadingScene } from "../scenes/LoadingScene";
 import { RulesScene } from "../scenes/RulesScene";
 import { TokensScene } from "../scenes/TokensScene";
+import { ResultScene } from "../scenes/ResultScene";
 
-type Scene = "greeting" | "warning" | "tokens" | "rules" | "input" | "loading";
+type Scene = "greeting" | "warning" | "tokens" | "rules" | "input" | "loading" | "result";
 
 // ── КОНСТАНТЫ ────────────────────────────────────────────────────
 const TOTAL_CARDS = 77;
@@ -19,6 +20,24 @@ const MIN_LOADING_MS = 4000;
 const CARD_FLIP_INTERVAL = 1400;
 const RECORDING_MAX_MS = 9000;
 
+// ── Интерфейсы ────────────────────────────────────────────────────
+interface CardInterpretation {
+  position: number;
+  position_meaning: string;
+  card_id: number;
+  card_name: string;
+  is_reversed: boolean;
+  text: string;
+}
+
+interface OracleResponse {
+  is_safe: boolean;
+  intro?: string;
+  conclusion?: string;
+  card_interpretations: CardInterpretation[];
+} // FIXED: закрывающая скобка была на месте
+
+// ── ГЛАВНЫЙ КОМПОНЕНТ ─────────────────────────────────────────────
 export function HomeScreen() {
   const [homeText, setHomeText] = useState("");
   const [homePaused, setHomePaused] = useState(false);
@@ -48,15 +67,18 @@ export function HomeScreen() {
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
-  const recordingTimerRef = useRef<ReturnType<typeof setTimeout>>();
+  const recordingTimerRef = useRef<ReturnType<typeof setTimeout>>(null);
 
-  // Loading стейты (возвращаем)
+  // Loading стейты
   const [currentCardId, setCurrentCardId] = useState(0);
   const [apiDone, setApiDone] = useState(false);
   const [minTimeDone, setMinTimeDone] = useState(false);
   const [loadingStatus, setLoadingStatus] = useState("SCANNING_MATRIX");
-  const cardFlipRef = useRef<ReturnType<typeof setInterval>>();
+  const cardFlipRef = useRef<ReturnType<typeof setInterval>>(null);
   const canProceed = apiDone && minTimeDone;
+
+  // Result стейты 
+  const [readingResult, setReadingResult] = useState<OracleResponse | null>(null);
 
   const userId = "471019051";
   const neuroTokens = 1;
@@ -122,13 +144,15 @@ export function HomeScreen() {
   // ── Тасование карт во время загрузки ───────────────────────────
   useEffect(() => {
     if (scene !== "loading") {
-      clearInterval(cardFlipRef.current);
+      if (cardFlipRef.current) clearInterval(cardFlipRef.current);
       return;
     }
     cardFlipRef.current = setInterval(() => {
       setCurrentCardId(Math.floor(Math.random() * TOTAL_CARDS));
     }, CARD_FLIP_INTERVAL);
-    return () => clearInterval(cardFlipRef.current);
+    return () => {
+      if (cardFlipRef.current) clearInterval(cardFlipRef.current);
+    };
   }, [scene]);
 
   // ── INIT SESSION ───────────────────────────────────────────────
@@ -169,7 +193,7 @@ export function HomeScreen() {
       };
       mediaRecorder.onstop = () => {
         setIsRecording(false);
-        clearTimeout(recordingTimerRef.current);
+        if (recordingTimerRef.current) clearTimeout(recordingTimerRef.current);
         stream.getTracks().forEach((t) => t.stop());
         // TODO: обработка аудио
       };
@@ -191,7 +215,7 @@ export function HomeScreen() {
   };
 
   const handleStopRecording = () => {
-    clearTimeout(recordingTimerRef.current);
+    if (recordingTimerRef.current) clearTimeout(recordingTimerRef.current);
     mediaRecorderRef.current?.stop();
   };
 
@@ -484,13 +508,114 @@ export function HomeScreen() {
                     loadingStatus={loadingStatus}
                     apiDone={apiDone}
                     canProceed={canProceed}
-                    onNext={() => {
-                      // TODO: переход к результату расклада
-                      console.log("next clicked");
+                    onComplete={() => {
+                      // FIXED: переход к результату расклада с моковыми данными
+                      const mockCards: CardInterpretation[] = [
+                        {
+                          position: 1,
+                          position_meaning: "Past",
+                          card_id: 0,
+                          card_name: "The Fool",
+                          is_reversed: false,
+                          text: "Новое начало, спонтанность, вера в лучшее.",
+                        },
+                        {
+                          position: 2,
+                          position_meaning: "Present",
+                          card_id: 1,
+                          card_name: "The Magician",
+                          is_reversed: false,
+                          text: "Проявление, сила воли, концентрация ресурсов.",
+                        },
+                        {
+                          position: 3,
+                          position_meaning: "Future",
+                          card_id: 2,
+                          card_name: "The High Priestess",
+                          is_reversed: false,
+                          text: "Интуиция, тайны, внутреннее знание.",
+                        },
+                        {
+                          position: 4,
+                          position_meaning: "Challenge",
+                          card_id: 3,
+                          card_name: "The Empress",
+                          is_reversed: true,
+                          text: "Творческий застой, зависимость от внешнего.",
+                        },
+                        {
+                          position: 5,
+                          position_meaning: "Guidance",
+                          card_id: 4,
+                          card_name: "The Emperor",
+                          is_reversed: false,
+                          text: "Стабильность, структура, власть.",
+                        },
+                        {
+                          position: 6,
+                          position_meaning: "Surroundings",
+                          card_id: 5,
+                          card_name: "The Hierophant",
+                          is_reversed: false,
+                          text: "Традиции, наставничество, следование правилам.",
+                        },
+                        {
+                          position: 7,
+                          position_meaning: "Action",
+                          card_id: 6,
+                          card_name: "The Lovers",
+                          is_reversed: false,
+                          text: "Выбор, гармония, отношения.",
+                        },
+                        {
+                          position: 8,
+                          position_meaning: "Obstacle",
+                          card_id: 7,
+                          card_name: "The Chariot",
+                          is_reversed: true,
+                          text: "Потеря контроля, конфликт, отсутствие направления.",
+                        },
+                        {
+                          position: 9,
+                          position_meaning: "Strength",
+                          card_id: 8,
+                          card_name: "Strength",
+                          is_reversed: false,
+                          text: "Внутренняя сила, мужество, сострадание.",
+                        },
+                        {
+                          position: 10,
+                          position_meaning: "Outcome",
+                          card_id: 9,
+                          card_name: "The Hermit",
+                          is_reversed: false,
+                          text: "Самоанализ, поиск истины, уединение.",
+                        },
+                      ];
+                      const mockResult: OracleResponse = {
+                        is_safe: true,
+                        intro: "Оракул внимает твоему вопросу...",
+                        conclusion: "Путь будет ясен, если доверишься знакам.",
+                        card_interpretations: mockCards,
+                      };
+                      setReadingResult(mockResult);
+                      switchScene("result");
                     }}
                     onCancel={() => {
-                      clearInterval(cardFlipRef.current);
+                      if (cardFlipRef.current) clearInterval(cardFlipRef.current);
                       setIsReading(false);
+                    }}
+                  />
+                )}
+
+                {/* ADDED: сцена результата */}
+                {scene === "result" && readingResult?.card_interpretations && (
+                  <ResultScene
+                    isVisible={sceneVisible}
+                    cards={readingResult.card_interpretations}
+                    onReset={() => {
+                      setIsReading(false);
+                      switchScene("greeting");
                     }}
                   />
                 )}
