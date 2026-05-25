@@ -89,9 +89,6 @@ export function LoadingScene({
         >
           {canProceed ? "[ next ]" : "[ next // ожидание ]"}
         </TerminalButton>
-        <TerminalButton variant="cancel" onClick={onCancel}>
-          [ cancel ]
-        </TerminalButton>
       </div>
     </div>
   );

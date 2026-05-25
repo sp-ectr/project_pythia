@@ -2,7 +2,9 @@ import { useEffect, useRef, useState } from "react";
 import WebApp from "@twa-dev/sdk";
 import backImg from "../assets/back.webp";
 import { useDecrypt } from "../hooks/useDecrypt";
+import { Ouroboros } from "../components/ui/Ouroboros";
 import { GlitchCard } from "../components/core/GlitchCard";
+import { TerminalButton } from "../components/ui/TerminalButton";
 import { GreetingScene } from "../scenes/GreetingScene";
 import { Cursor } from "../components/ui/Cursor";
 import { WarningScene } from "../scenes/WarningScene";
@@ -35,7 +37,7 @@ interface OracleResponse {
   intro?: string;
   conclusion?: string;
   card_interpretations: CardInterpretation[];
-} // FIXED: закрывающая скобка была на месте
+}
 
 // ── ГЛАВНЫЙ КОМПОНЕНТ ─────────────────────────────────────────────
 export function HomeScreen() {
@@ -320,56 +322,58 @@ export function HomeScreen() {
           </div>
         )}
 
-        {/* КАРТА (стопка + глитч) */}
-        <div
-          style={{
-            position: "absolute",
-            top: isReading ? "2vh" : "50vh",
-            left: isReading ? "15%" : "50%",
-            transform: isReading
-              ? "translateX(calc(-50% + 40px))"
-              : "translateX(-50%) translateY(-50%)",
-            transition: "all 1.1s cubic-bezier(0.2, 0.9, 0.4, 1.1)",
-            zIndex: 10,
-          }}
-        >
-          <div className="relative flex items-center gap-4">
-            <div className="card-stack">
-              {!isReading && (
-                <>
-                  <img
-                    src={backImg}
-                    className="card-left rounded-xl border border-cyan-500/30"
-                  />
-                  <img
-                    src={backImg}
-                    className="card-right rounded-xl border border-fuchsia-500/30"
-                  />
-                </>
-              )}
-              <img
-                src={backImg}
-                className="card-center rounded-xl border border-cyan-400 shadow-[0_0_30px_rgba(34,211,238,0.5)]"
-              />
-            </div>
-
-            {/* Глитч-карта справа — только во время загрузки */}
-            {scene === "loading" && (
-              <div
-                style={{
-                  position: "absolute",
-                  left: "calc(100% + 16px)",
-                  top: "50%",
-                  transform: "translateY(-50%)",
-                  width: "192px",
-                  height: "320px",
-                }}
-              >
-                <GlitchCard cardId={currentCardId} />
+        {/* КАРТА (стопка + глитч) - СКРЫВАЕМ ЕСЛИ СЦЕНА РЕЗУЛЬТАТА */}
+        {scene !== "result" && (
+          <div
+            style={{
+              position: "absolute",
+              top: isReading ? "2vh" : "50vh",
+              left: isReading ? "15%" : "50%",
+              transform: isReading
+                ? "translateX(calc(-50% + 40px))"
+                : "translateX(-50%) translateY(-50%)",
+              transition: "all 1.1s cubic-bezier(0.2, 0.9, 0.4, 1.1)",
+              zIndex: 10,
+            }}
+          >
+            <div className="relative flex items-center gap-4">
+              <div className="card-stack">
+                {!isReading && (
+                  <>
+                    <img
+                      src={backImg}
+                      className="card-left rounded-xl border border-cyan-500/30"
+                    />
+                    <img
+                      src={backImg}
+                      className="card-right rounded-xl border border-fuchsia-500/30"
+                    />
+                  </>
+                )}
+                <img
+                  src={backImg}
+                  className="card-center rounded-xl border border-cyan-400 shadow-[0_0_30px_rgba(34,211,238,0.5)]"
+                />
               </div>
-            )}
+
+              {/* Глитч-карта справа — только во время загрузки */}
+              {scene === "loading" && (
+                <div
+                  style={{
+                    position: "absolute",
+                    left: "calc(100% + 16px)",
+                    top: "50%",
+                    transform: "translateY(-50%)",
+                    width: "192px",
+                    height: "320px",
+                  }}
+                >
+                  <GlitchCard cardId={currentCardId} />
+                </div>
+              )}
+            </div>
           </div>
-        </div>
+        )}
 
         {/* КНОПКА INIT */}
         {!isReading && (
@@ -397,8 +401,12 @@ export function HomeScreen() {
         {/* ТЕРМИНАЛ (после INIT) */}
         {isReading && (
           <div
-            className="absolute left-0 w-full h-full overflow-y-auto z-30 px-6 font-mono text-sm"
-            style={{ paddingTop: "30vh" }}
+            // МОДИФИКАЦИЯ: блокируем скролл и убираем padding-top на сцене result, чтобы занять весь экран
+            
+            className={`absolute left-0 w-full h-full z-30 px-6 font-mono text-sm ${
+            scene === "result" ? "overflow-hidden flex flex-col justify-center" : "overflow-y-auto"
+            }`}
+            style={{ paddingTop: scene === "result" ? "0" : "30vh" }}
           >
             <div
               style={{
@@ -406,28 +414,32 @@ export function HomeScreen() {
                 transition: "opacity 0.3s ease",
               }}
             >
-              {/* Хедер */}
-              <div className="border border-cyan-500/30 bg-black/70 p-3.5 mb-2 text-cyan-400/90 text-xs tracking-[0.5px]">
-                <span>{statusLine1}</span>
-                <br />
-                <span>
-                  {"STATUS: "}
-                  <span className="text-emerald-400">
-                    {statusLine2.replace("STATUS: ", "")}
+              {/* Хедер - СКРЫВАЕМ НА СЦЕНЕ RESULT */}
+              {scene !== "result" && (
+                <div className="border border-cyan-500/30 bg-black/70 p-3.5 mb-2 text-cyan-400/90 text-xs tracking-[0.5px]">
+                  <span>{statusLine1}</span>
+                  <br />
+                  <span>
+                    {"STATUS: "}
+                    <span className="text-emerald-400">
+                      {statusLine2.replace("STATUS: ", "")}
+                    </span>
                   </span>
-                </span>
-              </div>
+                </div>
+              )}
 
-              {/* Токены */}
-              <div className="flex items-center justify-between border border-cyan-500/20 bg-black/50 p-3 mb-5">
-                <div className="text-xs text-cyan-400/90">{tokensLabel}</div>
-                <button
-                  onClick={() => switchScene("tokens")}
-                  className="text-cyan-400 hover:text-cyan-300 transition underline decoration-dotted underline-offset-4 text-xs"
-                >
-                  [TAROT_TOKENS]
-                </button>
-              </div>
+              {/* Токены - СКРЫВАЕМ НА СЦЕНЕ RESULT */}
+              {scene !== "result" && (
+                <div className="flex items-center justify-between border border-cyan-500/20 bg-black/50 p-3 mb-5">
+                  <div className="text-xs text-cyan-400/90">{tokensLabel}</div>
+                  <button
+                    onClick={() => switchScene("tokens")}
+                    className="text-cyan-400 hover:text-cyan-300 transition underline decoration-dotted underline-offset-4 text-xs"
+                  >
+                    [TAROT_TOKENS]
+                  </button>
+                </div>
+              )}
 
               {/* Сцены */}
               <div
@@ -509,93 +521,92 @@ export function HomeScreen() {
                     apiDone={apiDone}
                     canProceed={canProceed}
                     onComplete={() => {
-                      // FIXED: переход к результату расклада с моковыми данными
                       const mockCards: CardInterpretation[] = [
                         {
                           position: 1,
                           position_meaning: "Past",
-                          card_id: 0,
-                          card_name: "The Fool",
-                          is_reversed: false,
-                          text: "Новое начало, спонтанность, вера в лучшее.",
+                          card_id: 13, // Death
+                          card_name: "Смерть",
+                          is_reversed: true,
+                          text: "Ты застрял в коконе прошлого, боясь отпустить старые методы. Перемены стучатся в двери, но ты держишь их на засове, питая застой своей нерешительностью.",
                         },
                         {
                           position: 2,
                           position_meaning: "Present",
-                          card_id: 1,
-                          card_name: "The Magician",
+                          card_id: 50, // Nine of Pentacles
+                          card_name: "Девятка Пентаклей",
                           is_reversed: false,
-                          text: "Проявление, сила воли, концентрация ресурсов.",
+                          text: "Твоя жажда независимости и комфорта становится клеткой. Ты ищешь внешнего признания, забывая, что истинное мастерство рождается в дисциплине, а не в ожидании плодов.",
                         },
                         {
                           position: 3,
                           position_meaning: "Future",
-                          card_id: 2,
-                          card_name: "The High Priestess",
-                          is_reversed: false,
-                          text: "Интуиция, тайны, внутреннее знание.",
+                          card_id: 1, // Magician
+                          card_name: "Маг",
+                          is_reversed: true,
+                          text: "В основе лежат нереализованные амбиции и попытки срезать путь. Ты пытался играть с судьбой, вместо того чтобы ковать свои инструменты с честностью.",
                         },
                         {
                           position: 4,
                           position_meaning: "Challenge",
-                          card_id: 3,
-                          card_name: "The Empress",
-                          is_reversed: true,
-                          text: "Творческий застой, зависимость от внешнего.",
+                          card_id: 6, // Lovers
+                          card_name: "Влюбленные",
+                          is_reversed: false,
+                          text: "Недавний выбор, сделанный тобой, был окрашен стремлением к гармонии, но, возможно, ты выбрал путь наименьшего сопротивления, а не путь истинного призвания.",
                         },
                         {
                           position: 5,
                           position_meaning: "Guidance",
-                          card_id: 4,
-                          card_name: "The Emperor",
+                          card_id: 9, // Hermit
+                          card_name: "Отшельник",
                           is_reversed: false,
-                          text: "Стабильность, структура, власть.",
+                          text: "Ты стремишься к глубокому пониманию своего ремесла. Это благородная цель, требующая уединения и отказа от суеты ради накопления внутренней мудрости.",
                         },
                         {
                           position: 6,
                           position_meaning: "Surroundings",
-                          card_id: 5,
-                          card_name: "The Hierophant",
+                          card_id: 52, // Queen of Pentacles
+                          card_name: "Королева Пентаклей",
                           is_reversed: false,
-                          text: "Традиции, наставничество, следование правилам.",
+                          text: "Земная удача близка. Практические шаги и забота о материальной базе принесут свои плоды, если ты применишь упорство вместо грез.",
                         },
                         {
                           position: 7,
                           position_meaning: "Action",
-                          card_id: 6,
-                          card_name: "The Lovers",
+                          card_id: 42, // Seven of Cups
+                          card_name: "Семерка Кубков",
                           is_reversed: false,
-                          text: "Выбор, гармония, отношения.",
+                          text: "Твой разум затуманен призраками множества дорог. Ты видишь тени оферов, но не можешь различить, где истина, а где лишь игра твоего воображения.",
                         },
                         {
                           position: 8,
                           position_meaning: "Obstacle",
-                          card_id: 7,
-                          card_name: "The Chariot",
+                          card_id: 49, // Page of Pentacles
+                          card_name: "Паж Пентаклей",
                           is_reversed: true,
-                          text: "Потеря контроля, конфликт, отсутствие направления.",
+                          text: "Внешний мир вокруг тебя полон прокрастинации. Потенциальные возможности тратятся впустую, и среда не способствует твоему стремительному росту.",
                         },
                         {
                           position: 9,
                           position_meaning: "Strength",
-                          card_id: 8,
-                          card_name: "Strength",
-                          is_reversed: false,
-                          text: "Внутренняя сила, мужество, сострадание.",
+                          card_id: 44, // Nine of Cups
+                          card_name: "Девятка Кубков",
+                          is_reversed: true,
+                          text: "Ты боишься, что, достигнув желаемого, обнаружишь пустоту. Твои ожидания от карьеры могут оказаться лишь декорациями, скрывающими отсутствие счастья.",
                         },
                         {
                           position: 10,
                           position_meaning: "Outcome",
-                          card_id: 9,
-                          card_name: "The Hermit",
+                          card_id: 25, // Five of Wands
+                          card_name: "Пятерка Жезлов",
                           is_reversed: false,
-                          text: "Самоанализ, поиск истины, уединение.",
+                          text: "Путь к оферу лежит через хаос и борьбу. Тебе придется доказывать свое право на место в строю, сражаясь с конкурентами и собственным беспокойством.",
                         },
                       ];
                       const mockResult: OracleResponse = {
                         is_safe: true,
-                        intro: "Оракул внимает твоему вопросу...",
-                        conclusion: "Путь будет ясен, если доверишься знакам.",
+                        intro: "Душа, ищущая опоры в потоках кода и золота, ты пришла к порогу, где зеркала отражают не то, что ты желаешь видеть, а то, что ты боишься признать.",
+                        conclusion: "Офер придет не как подарок, а как трофей, добытый в схватке. Перестань грезить о легком пути — сбрось оковы сомнений, отточи свой разум в тишине и приготовься к битве за свое место под солнцем. Истинное мастерство не просят, его отвоевывают. Истинное мастерство не просят, его отвоевывают.",
                         card_interpretations: mockCards,
                       };
                       setReadingResult(mockResult);
@@ -608,11 +619,13 @@ export function HomeScreen() {
                   />
                 )}
 
-                {/* ADDED: сцена результата */}
+                {/* Сцена результата */}
                 {scene === "result" && readingResult?.card_interpretations && (
                   <ResultScene
                     isVisible={sceneVisible}
                     cards={readingResult.card_interpretations}
+                    intro={readingResult.intro}
+                    conclusion={readingResult.conclusion}
                     onReset={() => {
                       setIsReading(false);
                       switchScene("greeting");

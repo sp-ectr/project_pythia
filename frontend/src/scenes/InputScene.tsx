@@ -46,7 +46,7 @@ export function InputScene({
     if (!isVisible) return;
     setInputIntroText("");
     setInputIntroDone(false);
-    const fullIntro = `Закройте глаза.\nУспокойте свой разум.\n\nКак вы хотите задать свой вопрос?`;
+    const fullIntro = `Пифия не принимает решений за смертных.\nОна лишь приоткрывает завесу.\n\nКак вы хотите задать свой вопрос?`;
     let i = 0;
     let timer: ReturnType<typeof setTimeout>;
     const type = () => {

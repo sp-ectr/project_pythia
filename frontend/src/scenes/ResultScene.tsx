@@ -1,10 +1,37 @@
 import { useState, useEffect } from "react";
 import { TerminalButton } from "../components/ui/TerminalButton";
 import { Cursor } from "../components/ui/Cursor";
-import { GlitchCard } from "../components/core/GlitchCard";
 import { useDecrypt } from "../hooks/useDecrypt";
+import { CardReveal } from "../components/ui/CardReveal";
 
-// Описываем, какие данные сцена должна получить на вход
+// Утвержденные описания позиций
+const POSITION_TITLES: Record<number, string> = {
+  1: "1 — Карта (суть текущего момента)",
+  2: "2 — Карта препятствия или усилителя",
+  3: "3 — Карта корня (прошлое)",
+  4: "4 — Карта недавнего прошлого",
+  5: "5 — Карта цели (осознанное направление)",
+  6: "6 — Карта ближайшего будущего",
+  7: "7 — Карта внутреннего состояния",
+  8: "8 — Карта окружения",
+  9: "9 — Карта надежд и страхов",
+  10: "10 — Карта итога",
+};
+
+// ИСПРАВЛЕНО: Внешние кавычки заменены на одинарные, чтобы Vite не ругался на parsing error
+const POSITION_EXPLANATIONS: Record<number, string> = {
+  1: 'это "снимок системы сейчас", как выглядит ситуация прямо в этой точке без оценок;',
+  2: "то, что либо тормозит процесс, либо наоборот подталкивает его и меняет динамику;",
+  3: "базовый сценарий или установка, из которой всё выросло и продолжает тянуться;",
+  4: "последний важный импульс или событие, которое сдвинуло ситуацию в текущее состояние;",
+  5: "то, как человек сам себе объясняет, куда он идёт и чего хочет;",
+  6: "инерция процесса, куда всё естественно движется, если ничего не менять;",
+  7: "как человек сейчас ощущает себя внутри ситуации, эмоционально и ментально;",
+  8: "внешние люди, условия и давление среды, которые формируют контекст;",
+  9: "смешанная внутренняя модель результата, где одновременно есть желание и избегание;",
+  10: "вероятный финал текущей траектории, если система продолжит двигаться так же.",
+};
+
 interface CardInterpretation {
   position: number;
   position_meaning: string;
@@ -16,87 +43,215 @@ interface CardInterpretation {
 
 interface ResultSceneProps {
   isVisible: boolean;
-  cards: CardInterpretation[]; // Передаем массив из 10 карт
-  onReset: () => void;         // Коллбэк для возврата на HOME
+  cards: CardInterpretation[];
+  intro?: string;
+  conclusion?: string;
+  onReset: () => void;
 }
 
+type StepState =
+  | "oracle_intro"
+  | "card_intro"
+  | "card_reading"
+  | "oracle_conclusion";
 
-export function ResultScene({ isVisible, cards, onReset }: ResultSceneProps) {
+export function ResultScene({
+  isVisible,
+  cards,
+  intro,
+  conclusion,
+  onReset,
+}: ResultSceneProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [step, setStep] = useState<StepState>("oracle_intro");
+  const [displayedTitle, setDisplayedTitle] = useState("");
   const [displayedText, setDisplayedText] = useState("");
   const [typingDone, setTypingDone] = useState(false);
 
   const card = cards[currentIndex];
 
-  const rawTitle = `${card.position}. ${card.position_meaning.toUpperCase()}: ${card.card_name.toUpperCase()}${card.is_reversed ? " (REVERSED)" : ""}`;
-  const decryptedTitle = useDecrypt(rawTitle, isVisible, 500);
+  // Прогресс-бар: oracle_intro=0, карты=пропорционально, conclusion=100
+  const progressPercent =
+    step === "oracle_intro"
+      ? 0
+      : step === "oracle_conclusion"
+        ? 100
+        : Math.round(((currentIndex + (step === "card_reading" ? 0.7 : 0.3)) / cards.length) * 90 + 5);
 
+  // Декрипт для текста гадания
+  const shouldDecryptReading = isVisible && step === "card_reading";
+  const decryptedReading = useDecrypt(card.text, shouldDecryptReading, 1000);
+
+  const handleNext = () => {
+    if (step === "oracle_intro") {
+      setStep("card_intro");
+    } else if (step === "card_intro") {
+      setStep("card_reading");
+    } else if (step === "card_reading") {
+      if (currentIndex < cards.length - 1) {
+        setCurrentIndex((prev) => prev + 1);
+        setStep("card_intro");
+      } else {
+        setStep("oracle_conclusion");
+      }
+    } else if (step === "oracle_conclusion") {
+      onReset();
+    }
+  };
+
+  const handlePrev = () => {
+    if (step === "card_intro") {
+      if (currentIndex > 0) {
+        setCurrentIndex((prev) => prev - 1);
+        setStep("card_reading");
+      } else {
+        setStep("oracle_intro");
+      }
+    } else if (step === "card_reading") {
+      setStep("card_intro");
+    } else if (step === "oracle_conclusion") {
+      setCurrentIndex(cards.length - 1);
+      setStep("card_reading");
+    }
+  };
+
+  // Эффект печати
   useEffect(() => {
     if (!isVisible) return;
+    if (step === "card_reading") return;
 
+    setDisplayedTitle("");
     setDisplayedText("");
     setTypingDone(false);
 
-    let i = 0;
-    const fullText = card.text;
+    let activeTitle = "";
+    let activeText = "";
 
-    const timer = setInterval(() => {
-      if (i < fullText.length) {
-        setDisplayedText((prev) => prev + fullText[i]);
-        i++;
+    if (step === "oracle_intro") {
+      activeTitle = "🔮 ТВОЕ ПОСЛАНИЕ ОТ ПИФИИ";
+      activeText = intro || "";
+    } else if (step === "card_intro") {
+      activeTitle = POSITION_TITLES[card.position] || "";
+      activeText = POSITION_EXPLANATIONS[card.position] || "";
+    } else if (step === "oracle_conclusion") {
+      activeTitle = "✨ ФИНАЛЬНЫЙ ВЕРДИКТ ПИФИИ";
+      activeText = conclusion || "";
+    }
+
+    let titleIdx = 0;
+    let textIdx = 0;
+
+    const titleTimer = setInterval(() => {
+      if (titleIdx < activeTitle.length) {
+        setDisplayedTitle(activeTitle.slice(0, titleIdx + 1));
+        titleIdx++;
       } else {
-        setTypingDone(true);
-        clearInterval(timer);
+        clearInterval(titleTimer);
+        const textTimer = setInterval(() => {
+          if (textIdx < activeText.length) {
+            setDisplayedText(activeText.slice(0, textIdx + 1));
+            textIdx++;
+          } else {
+            clearInterval(textTimer);
+            setTypingDone(true);
+          }
+        }, 28);
       }
-    }, 30); // Скорость печати (30мс на символ)
+    }, 42);
 
-    return () => clearInterval(timer);
-  }, [currentIndex, isVisible, card.text]);
+    return () => clearInterval(titleTimer);
+  }, [currentIndex, isVisible, step, card?.position, intro, conclusion]);
 
   if (!isVisible) return null;
 
+  const showCard = step === "card_intro" || step === "card_reading";
+
   return (
-    <div className="flex flex-col items-center w-full">
-      
-      {/* Карта сверху (пока просто GlitchCard, анимации накрутим на Шаге 4) */}
-      <div key={currentIndex} className="mb-6 flex justify-center animate-materialize">
-        <GlitchCard cardId={card.card_id} />
+    <div className="h-full flex flex-col items-center w-full">
+
+      {/* PROGRESS BAR */}
+      <div className="w-full mb-4 h-[2px] bg-cyan-500/10 rounded-full overflow-hidden">
+        <div
+          className="h-full rounded-full transition-all duration-700 ease-out"
+          style={{
+            width: `${progressPercent}%`,
+            background: "linear-gradient(90deg, #22d3ee, #a78bfa)",
+          }}
+        />
       </div>
 
-      {/* Decrypt-заголовок */}
-      <div className="text-cyan-400 text-xs tracking-[0.2em] uppercase mb-4 text-center font-bold">
-        {decryptedTitle}
+      {/* ВЕРХНИЙ ЗАГОЛОВОК */}
+      <div className="border border-cyan-500/30 bg-black/70 p-3 mb-4 w-full text-center text-xs font-mono tracking-[0.5px] text-cyan-400 shadow-[0_0_12px_rgba(34,211,238,0.15)] min-h-[42px] flex items-center justify-center">
+        <span>{displayedTitle}</span>
+        {(step === "oracle_intro" || step === "card_intro" || step === "oracle_conclusion") &&
+          !typingDone && (
+            <span className="inline-block w-[2px] h-[10px] bg-cyan-400 ml-1 animate-pulse" />
+          )}
       </div>
 
-      {/* Текст интерпретации с курсором */}
-      <div className="leading-relaxed text-slate-300 text-[13.5px] border-l border-cyan-500/30 pl-4 mb-8 min-h-[140px] w-full whitespace-pre-wrap">
-        {displayedText}
-        <Cursor isBlinking={typingDone} />
+      {/* НАЗВАНИЕ КАРТЫ + ПОЗИЦИЯ */}
+      {showCard && (
+        <div className="flex items-center justify-center gap-2 mb-4 w-full flex-wrap">
+          {/* Бейдж позиции */}
+          <span className="text-[10px] font-mono text-cyan-400/60 border border-cyan-500/25 px-2 py-[2px] tracking-widest">
+            {currentIndex + 1} / {cards.length}
+          </span>
+          {/* Название */}
+          <span className="text-cyan-300 text-sm font-bold font-mono tracking-widest drop-shadow-[0_0_5px_rgba(34,211,238,0.4)]">
+            [ {card.card_name.toUpperCase()} ]
+          </span>
+          {/* Reversed */}
+          {card.is_reversed && (
+            <span className="text-[10px] font-mono font-black text-rose-500 border border-rose-500/35 px-2 py-[2px] tracking-widest drop-shadow-[0_0_6px_rgba(244,63,94,0.5)]">
+              REVERSED
+            </span>
+          )}
+        </div>
+      )}
+
+      {/* КАРТА — пиксельная материализация */}
+      {showCard && (
+        <div className="mb-4 flex justify-center">
+          <CardReveal
+            key={`${currentIndex}-${step}`}
+            revealKey={`${currentIndex}-${step}`}
+            src={`/cards/${card.card_id}.webp`}
+            alt={card.card_name}
+            isReversed={card.is_reversed}
+          />
+        </div>
+      )}
+
+      {/* ТЕКСТ */}
+      <div className="leading-7 text-slate-300 text-[15px] border-l-2 border-cyan-500/40 pl-4 mb-5 min-h-[110px] w-full whitespace-pre-wrap overflow-hidden font-mono">
+        {step === "card_reading" ? decryptedReading : displayedText}
+        <Cursor
+          isBlinking={
+            step === "card_reading"
+              ? decryptedReading === card.text
+              : typingDone
+          }
+        />
       </div>
 
-      {/* Кнопки навигации */}
-      <div className="flex gap-3 w-full">
-        {currentIndex > 0 ? (
-          <TerminalButton variant="cancel" onClick={() => setCurrentIndex((prev) => prev - 1)}>
+      {/* КНОПКИ */}
+      <div className="flex gap-3 w-full mt-auto">
+        {step !== "oracle_intro" && (
+          <TerminalButton variant="cancel" onClick={handlePrev}>
             [ prev ]
           </TerminalButton>
-        ) : (
-          // Если это первая карта, кнопка "Назад" возвращает нас в HOME
-          <TerminalButton variant="danger" onClick={onReset}>
-            [ exit ]
-          </TerminalButton>
         )}
-
-        {currentIndex < cards.length - 1 ? (
-          <TerminalButton variant="primary" onClick={() => setCurrentIndex((prev) => prev + 1)}>
-            [ next ]
-          </TerminalButton>
-        ) : (
-          // На последней карте предлагаем закончить сессию
-          <TerminalButton variant="primary" onClick={onReset}>
-            [ finish ]
-          </TerminalButton>
-        )}
+        <TerminalButton variant="primary" onClick={handleNext}>
+          {step === "oracle_intro"
+            ? "[ unveil spread ]"
+            : step === "card_intro"
+              ? "[ decode ]"
+              : step === "card_reading" && currentIndex === cards.length - 1
+                ? "[ show conclusion ]"
+                : step === "oracle_conclusion"
+                  ? "[ finish ]"
+                  : "[ next ]"}
+        </TerminalButton>
       </div>
     </div>
   );

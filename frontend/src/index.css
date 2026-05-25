@@ -165,3 +165,20 @@
 .blink {
   animation: cursorBlink 1s steps(1) infinite;
 }
+
+@keyframes materialize {
+  0% { 
+    filter: blur(15px) brightness(1.5); 
+    transform: scale(0.9); 
+    opacity: 0; 
+  }
+  100% { 
+    filter: blur(0) brightness(1); 
+    transform: scale(1); 
+    opacity: 1; 
+  }
+}
+
+.animate-materialize {
+  animation: materialize 1.2s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+}

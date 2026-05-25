@@ -49,12 +49,12 @@ export function WarningScene({
       <div className="leading-relaxed text-slate-200 mb-6 border-l-2 border-rose-400/60 pl-4 text-[15px] whitespace-pre-wrap">
         {restText}
         {restText && <br />}
-        <div className="flex justify-between items-center">
+        <div className="flex justify-start mb-4">
           <span>{lastLine}</span>
           {warningDone && (
             <button
               onClick={onShowRules}
-              className="text-rose-400/90 hover:text-rose-300 underline decoration-dotted underline-offset-4 text-sm ml-4"
+              className="text-rose-400/90 hover:text-rose-300 underline decoration-dotted underline-offset-4 text-sm"
             >
               [ TERMINAL_RULES ]
             </button>

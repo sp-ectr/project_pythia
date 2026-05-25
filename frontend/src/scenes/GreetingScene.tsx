@@ -50,21 +50,33 @@ export function GreetingScene({
   if (!isVisible) return null;
 
   return (
-    <div>
-      <div className="leading-relaxed text-slate-200 mb-6 border-l-2 border-cyan-400/60 pl-4 text-[14.5px] whitespace-pre-wrap">
-        {oracleGreeting}
-        <Cursor isBlinking={greetingDone} />
-      </div>
-      {greetingDone && (
+  <div>
+    <div className="leading-relaxed text-slate-200 mb-6 border-l-2 border-cyan-400/60 pl-4 text-[14.5px] whitespace-pre-wrap">
+      {oracleGreeting}
+      <Cursor isBlinking={greetingDone} />
+    </div>
+
+    {greetingDone && (
+      <>
         <div className="flex flex-col gap-3">
           <TerminalButton variant="primary" onClick={onStart}>
             [ start ]
           </TerminalButton>
+
           <TerminalButton variant="cancel" onClick={onCancel}>
             [ cancel ]
           </TerminalButton>
+
+          <a
+            href="/policy"
+            target="_blank"
+            className="text-center text-cyan-300/70 hover:text-cyan-300 transition-colors text-[11px]"
+          >
+            [ by starting you accept the system protocol ]
+          </a>
         </div>
-      )}
-    </div>
-  );
+      </>
+    )}
+  </div>
+);
 }
