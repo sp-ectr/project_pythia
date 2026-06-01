@@ -11,7 +11,7 @@ export function BootScreen({ onComplete }: BootScreenProps) {
 
   useEffect(() => {
     const fullText = `> CONNECTING TO NEURAL NETWORK..
-    > ПРОВЕРКА УСПЕХА ЕСЛИ ВИДИШЬ УСПЕХ
+    > ПОСЛЕДНЯЯ ПРОВЕРКА ПИФИИ НА СОВМЕСТИМОСТЬ С ВАШИМ ВЕКТОРОМ..
 > BYPASSING SECURITY PROTOCOLS..
 > CALIBRATING ORACLE ENGINE V0.1
 

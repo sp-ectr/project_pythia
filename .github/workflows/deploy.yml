@@ -35,3 +35,11 @@ jobs:
           REMOTE_HOST: ${{ secrets.SERVER_IP }}
           REMOTE_USER: ${{ secrets.SERVER_USER }}
           TARGET: "/home/spectr/projects/pythia/frontend/"
+
+      - name: Fix permissions
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.SERVER_IP }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: chmod -R 755 /home/spectr/projects/pythia/frontend/
