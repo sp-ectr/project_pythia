@@ -2,9 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import WebApp from "@twa-dev/sdk";
 import backImg from "../assets/back.webp";
 import { useDecrypt } from "../hooks/useDecrypt";
-import { Ouroboros } from "../components/ui/Ouroboros";
 import { GlitchCard } from "../components/core/GlitchCard";
-import { TerminalButton } from "../components/ui/TerminalButton";
 import { GreetingScene } from "../scenes/GreetingScene";
 import { Cursor } from "../components/ui/Cursor";
 import { WarningScene } from "../scenes/WarningScene";
@@ -14,7 +12,14 @@ import { RulesScene } from "../scenes/RulesScene";
 import { TokensScene } from "../scenes/TokensScene";
 import { ResultScene } from "../scenes/ResultScene";
 
-type Scene = "greeting" | "warning" | "tokens" | "rules" | "input" | "loading" | "result";
+type Scene =
+  | "greeting"
+  | "warning"
+  | "tokens"
+  | "rules"
+  | "input"
+  | "loading"
+  | "result";
 
 // ── КОНСТАНТЫ ────────────────────────────────────────────────────
 const TOTAL_CARDS = 77;
@@ -79,8 +84,10 @@ export function HomeScreen() {
   const cardFlipRef = useRef<ReturnType<typeof setInterval>>(null);
   const canProceed = apiDone && minTimeDone;
 
-  // Result стейты 
-  const [readingResult, setReadingResult] = useState<OracleResponse | null>(null);
+  // Result стейты
+  const [readingResult, setReadingResult] = useState<OracleResponse | null>(
+    null,
+  );
 
   const userId = "471019051";
   const neuroTokens = 1;
@@ -120,7 +127,7 @@ export function HomeScreen() {
   };
 
   // ── Запуск загрузки (полная логика) ────────────────────────────
-  const startLoading = (question: string) => {
+  const startLoading = () => {
     switchScene("loading");
     setApiDone(false);
     setMinTimeDone(false);
@@ -160,7 +167,14 @@ export function HomeScreen() {
   // ── INIT SESSION ───────────────────────────────────────────────
   const handleInitSession = () => {
     setIsReading(true);
-    setScene("greeting");
+
+    // Проверяем баланс токенов при старте сессии
+    if (neuroTokens <= 0) {
+      setScene("tokens");
+    } else {
+      setScene("greeting");
+    }
+
     setTimeout(() => {
       setTerminalVisible(true);
       setSceneVisible(true);
@@ -402,9 +416,11 @@ export function HomeScreen() {
         {isReading && (
           <div
             // МОДИФИКАЦИЯ: блокируем скролл и убираем padding-top на сцене result, чтобы занять весь экран
-            
+
             className={`absolute left-0 w-full h-full z-30 px-6 font-mono text-sm ${
-            scene === "result" ? "overflow-hidden flex flex-col justify-center" : "overflow-y-auto"
+              scene === "result"
+                ? "overflow-hidden flex flex-col justify-center"
+                : "overflow-y-auto"
             }`}
             style={{ paddingTop: scene === "result" ? "0" : "30vh" }}
           >
@@ -430,11 +446,21 @@ export function HomeScreen() {
 
               {/* Токены - СКРЫВАЕМ НА СЦЕНЕ RESULT */}
               {scene !== "result" && (
-                <div className="flex items-center justify-between border border-cyan-500/20 bg-black/50 p-3 mb-5">
-                  <div className="text-xs text-cyan-400/90">{tokensLabel}</div>
+                <div
+                  className={`flex items-center justify-between border bg-black/50 p-3 mb-5 transition-colors duration-500 ${
+                    neuroTokens <= 0
+                      ? "border-rose-500/25 text-rose-400/90"
+                      : "border-cyan-500/20 text-cyan-400/90"
+                  }`}
+                >
+                  <div className="text-xs">{tokensLabel}</div>
                   <button
                     onClick={() => switchScene("tokens")}
-                    className="text-cyan-400 hover:text-cyan-300 transition underline decoration-dotted underline-offset-4 text-xs"
+                    className={`transition-colors duration-300 underline decoration-dotted underline-offset-4 text-xs ${
+                      neuroTokens <= 0
+                        ? "text-rose-400 hover:text-rose-300"
+                        : "text-cyan-400 hover:text-cyan-300"
+                    }`}
                   >
                     [TAROT_TOKENS]
                   </button>
@@ -484,7 +510,13 @@ export function HomeScreen() {
                     onRecharge={() => {
                       /* recharge */
                     }}
-                    onCancel={() => switchScene("greeting")}
+                    onCancel={() => {
+                      if (neuroTokens <= 0) {
+                        setIsReading(false);
+                      } else {
+                        switchScene("greeting");
+                      }
+                    }}
                   />
                 )}
 
@@ -605,15 +637,18 @@ export function HomeScreen() {
                       ];
                       const mockResult: OracleResponse = {
                         is_safe: true,
-                        intro: "Душа, ищущая опоры в потоках кода и золота, ты пришла к порогу, где зеркала отражают не то, что ты желаешь видеть, а то, что ты боишься признать.",
-                        conclusion: "Офер придет не как подарок, а как трофей, добытый в схватке. Перестань грезить о легком пути — сбрось оковы сомнений, отточи свой разум в тишине и приготовься к битве за свое место под солнцем. Истинное мастерство не просят, его отвоевывают. Истинное мастерство не просят, его отвоевывают.",
+                        intro:
+                          "Душа, ищущая опоры в потоках кода и золота, ты пришла к порогу, где зеркала отражают не то, что ты желаешь видеть, а то, что ты боишься признать.",
+                        conclusion:
+                          "Офер придет не как подарок, а как трофей, добытый в схватке. Перестань грезить о легком пути — сбрось оковы сомнений, отточи свой разум в тишине и приготовься к битве за свое место под солнцем. Истинное мастерство не просят, его отвоевывают. Истинное мастерство не просят, его отвоевывают.",
                         card_interpretations: mockCards,
                       };
                       setReadingResult(mockResult);
                       switchScene("result");
                     }}
                     onCancel={() => {
-                      if (cardFlipRef.current) clearInterval(cardFlipRef.current);
+                      if (cardFlipRef.current)
+                        clearInterval(cardFlipRef.current);
                       setIsReading(false);
                     }}
                   />

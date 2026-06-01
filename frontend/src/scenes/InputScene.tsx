@@ -155,25 +155,34 @@ export function InputScene({
 
           {/* Текстовый режим */}
           {inputMode === "text" && (
-            <div className="flex flex-col gap-3">
-              <div className="border border-cyan-500/30 bg-black/60 p-1">
+            <div className="flex flex-col gap-3 w-full">
+              <div className="border border-cyan-500/30 bg-black/60 p-1 relative">
                 <textarea
                   ref={textareaRef}
                   value={textQuestion}
                   onChange={(e) => setTextQuestion(e.target.value)}
                   placeholder="Введите ваш вопрос..."
                   rows={4}
-                  className="w-full bg-transparent text-slate-200 text-[13.5px] leading-relaxed placeholder:text-slate-600 resize-none outline-none p-3 font-mono tracking-wide caret-cyan-400"
+                  maxLength={100} // Лимит ввода на уровне браузера
+                  className="w-full bg-transparent text-slate-200 text-[13.5px] leading-relaxed placeholder:text-slate-600 resize-none outline-none p-3 pb-8 font-mono tracking-wide caret-cyan-400"
                 />
+                {/* Пиксельный счетчик символов в углу textarea */}
+                <div className="absolute bottom-2 right-3 text-[10px] font-mono text-cyan-400/40">
+                  {textQuestion.length} / 100
+                </div>
               </div>
-              <div className="flex gap-3">
+
+              <div className="flex gap-3 w-full">
                 <button
                   onClick={() => {
-                    if (textQuestion.trim()) onAsk(textQuestion);
+                    if (textQuestion.trim() && textQuestion.length <= 100) {
+                      onAsk(textQuestion);
+                    }
                   }}
-                  disabled={!textQuestion.trim()}
+                  // Блокируем кнопку, если пусто или превышен лимит
+                  disabled={!textQuestion.trim() || textQuestion.length > 100}
                   className={`flex-1 py-4 font-mono uppercase tracking-[0.35em] text-xs border rounded-md transition-all duration-300 active:scale-[0.97] ${
-                    textQuestion.trim()
+                    textQuestion.trim() && textQuestion.length <= 100
                       ? "border-cyan-400/50 text-cyan-300 shadow-[0_0_12px_rgba(34,211,238,0.2)]"
                       : "border-slate-700/40 text-slate-600 cursor-not-allowed"
                   }`}

@@ -18,7 +18,6 @@ export function WarningScene({
   onConfirm,
   onCancel,
   onShowRules,
-  oracleWarning,
   warningDone,
   setOracleWarning,
   setWarningDone,

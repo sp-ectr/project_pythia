@@ -1,56 +1,22 @@
-import { useEffect, useState } from "react";
 import { Ouroboros } from "../components/ui/Ouroboros";
 import { TerminalButton } from "../components/ui/TerminalButton";
 
-const MIN_LOADING_MS = 4000;
-
 interface LoadingSceneProps {
   isVisible: boolean;
+  loadingStatus: string;
+  apiDone: boolean;
+  canProceed: boolean;
   onComplete: () => void;
   onCancel: () => void;
 }
 
 export function LoadingScene({
   isVisible,
+  loadingStatus,
+  apiDone,
+  canProceed,
   onComplete,
-  onCancel,
 }: LoadingSceneProps) {
-  const [apiDone, setApiDone] = useState(false);
-  const [minTimeDone, setMinTimeDone] = useState(false);
-  const [loadingStatus, setLoadingStatus] = useState("SCANNING_MATRIX");
-  const canProceed = apiDone && minTimeDone;
-
-  useEffect(() => {
-    if (!isVisible) return;
-    setApiDone(false);
-    setMinTimeDone(false);
-    setLoadingStatus("SCANNING_MATRIX");
-
-    const minTimer = setTimeout(() => setMinTimeDone(true), MIN_LOADING_MS);
-
-    const statuses = [
-      "SCANNING_MATRIX",
-      "ALIGNING_VECTORS",
-      "READING_ENTROPY",
-      "CONSULTING_ORACLE",
-    ];
-    const statusTimers = statuses.map((s, i) =>
-      setTimeout(() => setLoadingStatus(s), i * 1000),
-    );
-
-    // Имитация API (замени на реальный вызов)
-    const apiTimer = setTimeout(
-      () => setApiDone(true),
-      2500 + Math.random() * 3000,
-    );
-
-    return () => {
-      clearTimeout(minTimer);
-      statusTimers.forEach(clearTimeout);
-      clearTimeout(apiTimer);
-    };
-  }, [isVisible]);
-
   if (!isVisible) return null;
 
   return (

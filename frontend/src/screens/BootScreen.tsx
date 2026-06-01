@@ -9,7 +9,6 @@ export function BootScreen({ onComplete }: BootScreenProps) {
   const [bootText, setBootText] = useState("");
   const [bootPaused, setBootPaused] = useState(false);
 
-  // Этот useEffect теперь живет здесь. Он полностью инкапсулирован.
   useEffect(() => {
     const fullText = `> CONNECTING TO NEURAL NETWORK..
 > BYPASSING SECURITY PROTOCOLS..
@@ -53,7 +52,7 @@ export function BootScreen({ onComplete }: BootScreenProps) {
       <div className="absolute w-[500px] h-[500px] bg-cyan-500/10 blur-3xl rounded-full" />
       <div className="absolute inset-0 opacity-[0.03] bg-[radial-gradient(#ffffff_1px,transparent_1px)] bg-[size:4px_4px]" />
       <div className="absolute inset-0 pointer-events-none opacity-10 bg-[linear-gradient(rgba(255,255,255,0.03)_1px,transparent_1px)] bg-[size:100%_4px]" />
-      <div className="relative z-10 w-full max-w-md text-[19px] leading-7 whitespace-pre-line drop-shadow-[0_0_6px_cyan]">
+      <div className="relative z-10 w-full max-w-md text-base leading-7 whitespace-pre-line drop-shadow-[0_0_6px_cyan]">
         {bootText}
         <Cursor isBlinking={bootPaused} />
       </div>

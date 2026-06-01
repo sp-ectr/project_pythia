@@ -8,9 +8,15 @@ interface CardRevealProps {
 
 const TOTAL_DURATION = 1800;
 
+interface CardRevealProps {
+  src: string;
+  alt: string;
+  revealKey: number | string;
+  isReversed?: boolean;  // ← добавь эту строку
+}
+
 export function CardReveal({
   src,
-  alt,
   revealKey,
 }: CardRevealProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
