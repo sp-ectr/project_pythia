@@ -12,7 +12,7 @@ interface CardRevealProps {
   src: string;
   alt: string;
   revealKey: number | string;
-  isReversed?: boolean;  // ← добавь эту строку
+  isReversed?: boolean;  
 }
 
 export function CardReveal({
@@ -183,7 +183,7 @@ export function CardReveal({
     <div
       className="relative rounded-xl overflow-hidden border border-cyan-400/40"
       style={{
-        width: "18rem",
+        width: "14rem",
         aspectRatio: "9/16",
         boxShadow:
           "0 0 35px rgba(34,211,238,0.25)",
