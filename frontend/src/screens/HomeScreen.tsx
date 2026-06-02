@@ -146,7 +146,7 @@ export function HomeScreen() {
       setTimeout(() => setLoadingStatus(s), i * 1000);
     });
 
-    // Имитация API (заменишь на реальный вызов)
+    // Имитация API
     setTimeout(() => setApiDone(true), 2500 + Math.random() * 3000);
   };
 
@@ -188,7 +188,7 @@ export function HomeScreen() {
     }
   }, [inputMode]);
 
-  // ── Запись голоса ──────────────────────────────────────────────
+  // ── Запись голоса
   const handleVoice = async () => {
     setRecordingError("");
     try {
@@ -235,7 +235,7 @@ export function HomeScreen() {
     mediaRecorderRef.current?.stop();
   };
 
-  // ── HOME анимации ──────────────────────────────────────────────
+  // ── HOME анимации
   useEffect(() => {
     const pythiaTimer = setTimeout(() => setPythiaVisible(true), 300);
     const subtitleFull = "[ DIGITAL_TARO_BOT ]";
@@ -281,18 +281,18 @@ export function HomeScreen() {
     };
   }, []);
 
-  // ── RENDER ─────────────────────────────────────────────────────
   return (
-    <div className="min-h-screen bg-black text-slate-200 flex justify-center overflow-hidden font-mono">
-      <div className="w-full max-w-md h-screen relative overflow-hidden border-x border-slate-800 shadow-[0_0_60px_rgba(0,0,0,0.9)]">
+    <div className="min-h-screen bg-black text-slate-200 flex items-center justify-center overflow-hidden font-mono">
+      <div
+        className="flex flex-col relative overflow-hidden border border-slate-800 shadow-[0_0_60px_rgba(0,0,0,0.9)] bg-black"
+        style={{ width: "390px", height: "844px" }}
+      >
         {/* SCANLINES */}
         <div className="absolute inset-0 pointer-events-none z-50 opacity-10 bg-[linear-gradient(rgba(18,16,16,0)_50%,rgba(0,0,0,0.25)_50%),linear-gradient(90deg,rgba(255,0,0,0.06),rgba(0,255,0,0.02),rgba(0,0,255,0.06))] bg-[size:100%_4px,3px_100%]" />
 
-        {/* PYTHIA (до INIT) */}
         {!isReading && (
           <div
-            className="absolute left-0 w-full flex flex-col items-center px-6 z-20"
-            style={{ top: "18vh" }}
+            className="w-full flex flex-col items-center px-6 mt-10 z-20"
           >
             <h1 className="flex mb-2">
               {"PYTHIA".split("").map((letter, i) => (
@@ -335,13 +335,14 @@ export function HomeScreen() {
             </div>
           </div>
         )}
+        <div className="h-90 w-full"></div> 
 
-        {/* КАРТА (стопка + глитч) - СКРЫВАЕМ ЕСЛИ СЦЕНА РЕЗУЛЬТАТА */}
+        {/* КАРТА (стопка + глитч) - Изменено: top теперь считается в % от высоты контейнера 844px */}
         {scene !== "result" && (
           <div
             style={{
               position: "absolute",
-              top: isReading ? "2vh" : "50vh",
+              top: isReading ? "2%" : "50%",
               left: isReading ? "15%" : "50%",
               transform: isReading
                 ? "translateX(calc(-50% + 40px))"
@@ -389,12 +390,9 @@ export function HomeScreen() {
           </div>
         )}
 
-        {/* КНОПКА INIT */}
+        {/* КНОПКА INIT - Изменено: top теперь считается в % от высоты контейнера 844px */}
         {!isReading && (
-          <div
-            className="absolute left-0 w-full px-6 z-20"
-            style={{ top: "68vh" }}
-          >
+          <div className="flex justify-center px-6 mt-24 z-20">
             <button
               onClick={handleInitSession}
               className="group relative w-full py-4 font-mono uppercase tracking-[0.35em] text-sm text-cyan-200 bg-black border border-cyan-400/40 rounded-md overflow-hidden shadow-[0_0_12px_rgba(34,211,238,0.15)] transition-all duration-300 active:scale-[0.97]"
@@ -415,8 +413,6 @@ export function HomeScreen() {
         {/* ТЕРМИНАЛ (после INIT) */}
         {isReading && (
           <div
-            // МОДИФИКАЦИЯ: блокируем скролл и убираем padding-top на сцене result, чтобы занять весь экран
-
             className={`absolute left-0 w-full h-full z-30 px-6 font-mono text-sm ${
               scene === "result"
                 ? "overflow-hidden flex flex-col justify-center"
