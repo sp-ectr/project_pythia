@@ -333,17 +333,17 @@ export function HomeScreen() {
             </div>
           </div>
         )}
-        <div className="h-90 w-full"></div>
+        <div className="h-75 w-full"></div>
 
         {scene !== "result" && (
           <div
             style={{
               position: "absolute",
-              top: isReading ? "2%" : "50%",
+              top: isReading ? "0%" : "50%",
               left: isReading ? "15%" : "50%",
               transform: isReading
-                ? "translateX(calc(-50% + 40px))"
-                : "translateX(-50%) translateY(-50%)",
+                ? "translateX(calc(-50% + 40px)) scale(0.9)"
+                : "translateX(-50%) translateY(-50%) scale(1)",
               transition: "all 1.1s cubic-bezier(0.2, 0.9, 0.4, 1.1)",
               zIndex: 10,
             }}
@@ -414,9 +414,8 @@ export function HomeScreen() {
                 ? "overflow-hidden flex flex-col justify-center"
                 : "overflow-y-auto"
             }`}
-            style={{ paddingTop: scene === "result" ? "0" : "90%" }}
+            style={{ paddingTop: scene === "result" ? "0" : "84%" }}
           >
-            
             <div
               style={{
                 opacity: terminalVisible ? 1 : 0,

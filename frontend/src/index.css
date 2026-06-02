@@ -95,8 +95,8 @@
 /* ====================== КАРТОЧКИ ====================== */
 .card-stack {
   position: relative;
-  width: 12rem;
-  height: 20rem;
+  width: 13rem;
+  height: 21rem;
   perspective: 1000px;
 }
 
