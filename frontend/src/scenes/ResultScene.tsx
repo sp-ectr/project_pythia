@@ -56,6 +56,7 @@ type StepState =
   | "card_reading"
   | "oracle_conclusion";
 
+
 const getCipherPlaceholder = (text: string) => {
   return text.split("").map(() => "▓").join("");
 };
@@ -79,6 +80,7 @@ export function ResultScene({
 
   const isPureText = step === "oracle_intro" || step === "oracle_conclusion";
 
+  // Прогресс-бар
   const progressPercent =
     step === "oracle_intro"
       ? 0
@@ -86,19 +88,34 @@ export function ResultScene({
         ? 100
         : Math.round(((currentIndex + (step === "card_reading" ? 0.7 : 0.3)) / cards.length) * 90 + 5);
 
+  // 1. Декрипт для текста гадания
   const shouldDecryptReading = isVisible && step === "card_reading";
   const decryptedReading = useDecrypt(card.text, shouldDecryptReading, 1000);
+
+  // 2. Декрипт для имени карты
   const shouldDecryptName = isVisible && step === "card_reading";
   const decryptedCardName = useDecrypt(card.card_name.toUpperCase(), shouldDecryptName, 600);
 
-  const scrollToTop = () => {
+  // МОДИФИКАЦИЯ: Декларативный скролл-эффект. Срабатывает строго ПОСЛЕ коммита изменений в DOM
+  useEffect(() => {
+    if (!isVisible) return;
+    
+    // Мгновенный сброс в 0, чтобы экран не дергался во время смены стейта
     if (scrollRef.current) {
-      scrollRef.current.scrollTo({ top: 0, behavior: "smooth" });
+      scrollRef.current.scrollTop = 0;
     }
-  };
+
+    // Плавный доводчик наверх с микро-задержкой для стабильности в WebApp
+    const timer = setTimeout(() => {
+      if (scrollRef.current) {
+        scrollRef.current.scrollTo({ top: 0, behavior: "smooth" });
+      }
+    }, 40);
+
+    return () => clearTimeout(timer);
+  }, [currentIndex, step, isVisible]);
 
   const handleNext = () => {
-    scrollToTop();
     if (step === "oracle_intro") {
       setStep("card_intro");
     } else if (step === "card_intro") {
@@ -116,7 +133,6 @@ export function ResultScene({
   };
 
   const handlePrev = () => {
-    scrollToTop();
     if (step === "card_intro") {
       if (currentIndex > 0) {
         setCurrentIndex((prev) => prev - 1);
@@ -209,15 +225,12 @@ export function ResultScene({
       {/* НАЗВАНИЕ КАРТЫ + ПОЗИЦИЯ */}
       {showCard && (
         <div className="flex items-center justify-center gap-2 mb-4 w-full flex-wrap">
-          {/* Бейдж позиции */}
           <span className="text-[10px] font-mono text-cyan-400/60 border border-cyan-500/25 px-2 py-[2px] tracking-widest">
             {currentIndex + 1} / {cards.length}
           </span>
-          {/* Название (Декриптуется только при переходе к card_reading) */}
           <span className="text-cyan-300 text-sm font-bold font-mono tracking-widest drop-shadow-[0_0_5px_rgba(34,211,238,0.4)]">
             [ {step === "card_intro" ? getCipherPlaceholder(card.card_name) : decryptedCardName} ]
           </span>
-          {/* Reversed*/}
           {card.is_reversed && step === "card_reading" && (
             <span className="text-[10px] font-mono font-black text-rose-500 border border-rose-500/35 px-2 py-[2px] tracking-widest drop-shadow-[0_0_6px_rgba(244,63,94,0.5)]">
               REVERSED
