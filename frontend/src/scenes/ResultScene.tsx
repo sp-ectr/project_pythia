@@ -1,8 +1,11 @@
-import { useState, useEffect } from "react";
+// src/scenes/ResultScene.tsx
+
+import { useState, useEffect, useRef } from "react";
 import { TerminalButton } from "../components/ui/TerminalButton";
 import { Cursor } from "../components/ui/Cursor";
 import { useDecrypt } from "../hooks/useDecrypt";
 import { CardReveal } from "../components/ui/CardReveal";
+import backImg from "../assets/back.webp"; // Пробрасываем рубашку карт для интро-фазы
 
 // Утвержденные описания позиций
 const POSITION_TITLES: Record<number, string> = {
@@ -18,7 +21,7 @@ const POSITION_TITLES: Record<number, string> = {
   10: "10 — Карта итога",
 };
 
-// ИСПРАВЛЕНО: Внешние кавычки заменены на одинарные, чтобы Vite не ругался на parsing error
+// Системные описания позиций
 const POSITION_EXPLANATIONS: Record<number, string> = {
   1: 'это "снимок системы сейчас", как выглядит ситуация прямо в этой точке без оценок;',
   2: "то, что либо тормозит процесс, либо наоборот подталкивает его и меняет динамику;",
@@ -55,6 +58,11 @@ type StepState =
   | "card_reading"
   | "oracle_conclusion";
 
+// Функция генерации пиксельного шифра для скрытия имени карты
+const getCipherPlaceholder = (text: string) => {
+  return text.split("").map(() => "▓").join("");
+};
+
 export function ResultScene({
   isVisible,
   cards,
@@ -68,7 +76,11 @@ export function ResultScene({
   const [displayedText, setDisplayedText] = useState("");
   const [typingDone, setTypingDone] = useState(false);
 
+  const scrollRef = useRef<HTMLDivElement>(null);
+
   const card = cards[currentIndex];
+
+  const isPureText = step === "oracle_intro" || step === "oracle_conclusion";
 
   // Прогресс-бар: oracle_intro=0, карты=пропорционально, conclusion=100
   const progressPercent =
@@ -78,11 +90,22 @@ export function ResultScene({
         ? 100
         : Math.round(((currentIndex + (step === "card_reading" ? 0.7 : 0.3)) / cards.length) * 90 + 5);
 
-  // Декрипт для текста гадания
+  // 1. Декрипт для текста гадания (активируется во второй фазе)
   const shouldDecryptReading = isVisible && step === "card_reading";
   const decryptedReading = useDecrypt(card.text, shouldDecryptReading, 1000);
 
+  // 2. Декрипт для имени карты (активируется одновременно с расшифровкой)
+  const shouldDecryptName = isVisible && step === "card_reading";
+  const decryptedCardName = useDecrypt(card.card_name.toUpperCase(), shouldDecryptName, 600);
+
+  const scrollToTop = () => {
+    if (scrollRef.current) {
+      scrollRef.current.scrollTo({ top: 0, behavior: "smooth" });
+    }
+  };
+
   const handleNext = () => {
+    scrollToTop();
     if (step === "oracle_intro") {
       setStep("card_intro");
     } else if (step === "card_intro") {
@@ -100,6 +123,7 @@ export function ResultScene({
   };
 
   const handlePrev = () => {
+    scrollToTop();
     if (step === "card_intro") {
       if (currentIndex > 0) {
         setCurrentIndex((prev) => prev - 1);
@@ -115,7 +139,7 @@ export function ResultScene({
     }
   };
 
-  // Эффект печати
+  // Эффект печати для фаз интро
   useEffect(() => {
     if (!isVisible) return;
     if (step === "card_reading") return;
@@ -167,7 +191,7 @@ export function ResultScene({
   const showCard = step === "card_intro" || step === "card_reading";
 
   return (
-    <div className="h-full flex flex-col items-center w-full">
+    <div ref={scrollRef} className="h-full flex flex-col items-center w-full overflow-y-auto">
 
       {/* PROGRESS BAR */}
       <div className="w-full mb-4 h-[2px] bg-cyan-500/10 rounded-full overflow-hidden">
@@ -180,9 +204,9 @@ export function ResultScene({
         />
       </div>
 
-      {/* ВЕРХНИЙ ЗАГОЛОВОК */}
-      <div className="border border-cyan-500/30 bg-black/70 p-3 mb-4 w-full text-center text-xs font-mono tracking-[0.5px] text-cyan-400 shadow-[0_0_12px_rgba(34,211,238,0.15)] min-h-[42px] flex items-center justify-center">
-        <span>{displayedTitle}</span>
+      {/* ВЕРХНИЙ ЗАГОЛОВОК (Принудительно статичен на этапе чтения, чтобы не пропадал) */}
+      <div className="border border-cyan-500/30 bg-black/70 p-3 mb-4 w-full text-center text-xs font-mono tracking-[0.5px] text-cyan-400 shadow-[0_0_12px_rgba(34,211,238,0.15)] min-h-[42px] flex items-center justify-center font-bold">
+        <span>{step === "card_reading" ? POSITION_TITLES[card.position] : displayedTitle}</span>
         {(step === "oracle_intro" || step === "card_intro" || step === "oracle_conclusion") &&
           !typingDone && (
             <span className="inline-block w-[2px] h-[10px] bg-cyan-400 ml-1 animate-pulse" />
@@ -196,12 +220,12 @@ export function ResultScene({
           <span className="text-[10px] font-mono text-cyan-400/60 border border-cyan-500/25 px-2 py-[2px] tracking-widest">
             {currentIndex + 1} / {cards.length}
           </span>
-          {/* Название */}
+          {/* Название (Декриптуется только при переходе к card_reading) */}
           <span className="text-cyan-300 text-sm font-bold font-mono tracking-widest drop-shadow-[0_0_5px_rgba(34,211,238,0.4)]">
-            [ {card.card_name.toUpperCase()} ]
+            [ {step === "card_intro" ? getCipherPlaceholder(card.card_name) : decryptedCardName} ]
           </span>
-          {/* Reversed */}
-          {card.is_reversed && (
+          {/* Reversed (Отображается только на этапе расшифровки, сохраняя интригу) */}
+          {card.is_reversed && step === "card_reading" && (
             <span className="text-[10px] font-mono font-black text-rose-500 border border-rose-500/35 px-2 py-[2px] tracking-widest drop-shadow-[0_0_6px_rgba(244,63,94,0.5)]">
               REVERSED
             </span>
@@ -209,21 +233,49 @@ export function ResultScene({
         </div>
       )}
 
-      {/* КАРТА — пиксельная материализация */}
+      {/* КАРТА — либо рубашка в интро, либо материализация в ридинге */}
       {showCard && (
         <div className="mb-4 flex justify-center">
-          <CardReveal
-            key={`${currentIndex}-${step}`}
-            revealKey={`${currentIndex}-${step}`}
-            src={`/cards/${card.card_id}.webp`}
-            alt={card.card_name}
-            isReversed={card.is_reversed}
-          />
+          {step === "card_intro" ? (
+            // 1. Рубашка карты во время интро (просто статика, без переворота)
+            <div
+              className={`relative rounded-lg border ${
+                card.is_reversed ? "border-rose-500/70" : "border-cyan-400/80"
+              } overflow-hidden`}
+              style={{
+                width: "13rem",
+                height: "24rem",
+                boxShadow: card.is_reversed
+                  ? "0 0 20px rgba(244,63,94,0.45), inset 0 0 10px rgba(244,63,94,0.15)"
+                  : "0 0 20px rgba(34,211,238,0.45), inset 0 0 10px rgba(34,211,238,0.15)",
+                transition: "box-shadow 0.8s ease",
+              }}
+            >
+              <img
+                src={backImg}
+                alt="Card Back"
+                className="w-full h-full object-cover"
+              />
+            </div>
+          ) : (
+            // 2. Твоя крутая холст-материализация при расшифровке (без переворота для Reversed)
+            <CardReveal
+              key={`${currentIndex}-${step}`}
+              revealKey={`${currentIndex}-${step}`}
+              src={`/cards/${card.card_id}.webp`}
+              alt={card.card_name}
+              isReversed={false}
+              width="14rem"
+              height="25rem"
+            />
+          )}
         </div>
       )}
 
       {/* ТЕКСТ */}
-      <div className="leading-7 text-slate-300 text-[15px] border-l-2 border-cyan-500/40 pl-4 mb-5 min-h-[110px] w-full whitespace-pre-wrap overflow-hidden font-mono">
+      <div className={`leading-7 text-slate-300 text-[15px] border-l-2 border-cyan-500/40 pl-4 mb-5 w-full whitespace-pre-wrap overflow-hidden font-mono ${
+        isPureText ? "min-h-0" : "min-h-[110px] flex-1"
+      }`}>
         {step === "card_reading" ? decryptedReading : displayedText}
         <Cursor
           isBlinking={
@@ -235,7 +287,7 @@ export function ResultScene({
       </div>
 
       {/* КНОПКИ */}
-      <div className="flex gap-3 w-full mt-auto">
+      <div className={`flex gap-3 w-full ${isPureText ? "mt-6" : "mt-auto"}`}>
         {step !== "oracle_intro" && (
           <TerminalButton variant="cancel" onClick={handlePrev}>
             [ prev ]

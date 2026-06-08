@@ -183,8 +183,8 @@ export function CardReveal({
     <div
       className="relative rounded-xl overflow-hidden border border-cyan-400/40"
       style={{
-        width: "12rem",
-        height: "21rem",
+        width: "13rem",
+        height: "24rem",
         aspectRatio: "9/16",
         boxShadow:
           "0 0 35px rgba(34,211,238,0.25)",

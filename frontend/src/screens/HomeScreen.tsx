@@ -335,17 +335,19 @@ export function HomeScreen() {
         )}
         <div className="h-75 w-full"></div>
 
+        {/* карта - лого */}
         {scene !== "result" && (
           <div
             style={{
               position: "absolute",
               top: isReading ? "0%" : "50%",
-              left: isReading ? "15%" : "50%",
+              left: isReading ? "17%" : "50%",
               transform: isReading
-                ? "translateX(calc(-50% + 40px)) scale(0.9)"
+                ? "translateX(calc(-50% + 40px)) scale(0.8)"
                 : "translateX(-50%) translateY(-50%) scale(1)",
               transition: "all 1.1s cubic-bezier(0.2, 0.9, 0.4, 1.1)",
               zIndex: 10,
+              transformOrigin: isReading ? "10% 10%" : "center",
             }}
           >
             <div className="relative flex items-center gap-4">
@@ -373,11 +375,11 @@ export function HomeScreen() {
                 <div
                   style={{
                     position: "absolute",
-                    left: "calc(100% + 16px)",
+                    left: "calc(100% + 30px)",
                     top: "50%",
                     transform: "translateY(-50%)",
-                    width: "192px",
-                    height: "320px",
+                    width: "215px",
+                    height: "336px",
                   }}
                 >
                   <GlitchCard cardId={currentCardId} />
@@ -414,7 +416,7 @@ export function HomeScreen() {
                 ? "overflow-hidden flex flex-col justify-center"
                 : "overflow-y-auto"
             }`}
-            style={{ paddingTop: scene === "result" ? "0" : "84%" }}
+            style={{ paddingTop: scene === "result" ? "0" : scene === "loading" ? "78%" : "28%" }}
           >
             <div
               style={{
@@ -422,11 +424,11 @@ export function HomeScreen() {
                 transition: "opacity 0.3s ease",
                 height: scene === "result" ? "100%" : "auto",
               }}
-              className="flex flex-col w-full" 
+              className="flex flex-col w-full"
             >
               {/* Хедер - СКРЫВАЕМ НА СЦЕНЕ RESULT */}
-              {scene !== "result" && (
-                <div className="border border-cyan-500/30 bg-black/70 p-3.5 mb-2 text-cyan-400/90 text-xs tracking-[0.5px]">
+              {scene !== "result" && scene !== "loading" && (
+                <div className="ml-[45%] mr-[-6%] border border-cyan-500/30 bg-black/70 p-3.5 mb-2 text-cyan-400/90 text-xs tracking-[0.5px]">
                   <span>{statusLine1}</span>
                   <br />
                   <span>
@@ -439,18 +441,19 @@ export function HomeScreen() {
               )}
 
               {/* Токены - СКРЫВАЕМ НА СЦЕНЕ RESULT */}
-              {scene !== "result" && (
+              {scene !== "result" && scene !== "loading" && (
                 <div
-                  className={`flex items-center justify-between border bg-black/50 p-3 mb-5 transition-colors duration-500 ${
+                  className={`ml-[45%] mr-[-6%] flex flex-col bg-black/50 p-3 mb-5 transition-colors duration-500 ${
                     neuroTokens <= 0
                       ? "border-rose-500/25 text-rose-400/90"
                       : "border-cyan-500/20 text-cyan-400/90"
                   }`}
+                  style={{ borderWidth: "1px", borderStyle: "solid" }} // Добавляем рамку, так как в className её нет
                 >
-                  <div className="text-xs">{tokensLabel}</div>
+                  <div className="text-xs mb-2">{tokensLabel}</div>
                   <button
                     onClick={() => switchScene("tokens")}
-                    className={`transition-colors duration-300 underline decoration-dotted underline-offset-4 text-xs ${
+                    className={`transition-colors duration-300 underline decoration-dotted underline-offset-4 text-xs self-start ${
                       neuroTokens <= 0
                         ? "text-rose-400 hover:text-rose-300"
                         : "text-cyan-400 hover:text-cyan-300"
