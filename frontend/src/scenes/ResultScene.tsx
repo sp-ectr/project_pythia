@@ -1,11 +1,9 @@
-// src/scenes/ResultScene.tsx
-
 import { useState, useEffect, useRef } from "react";
 import { TerminalButton } from "../components/ui/TerminalButton";
 import { Cursor } from "../components/ui/Cursor";
 import { useDecrypt } from "../hooks/useDecrypt";
 import { CardReveal } from "../components/ui/CardReveal";
-import backImg from "../assets/back.webp"; // Пробрасываем рубашку карт для интро-фазы
+import backImg from "../assets/back.webp"; 
 
 // Утвержденные описания позиций
 const POSITION_TITLES: Record<number, string> = {
@@ -58,7 +56,6 @@ type StepState =
   | "card_reading"
   | "oracle_conclusion";
 
-// Функция генерации пиксельного шифра для скрытия имени карты
 const getCipherPlaceholder = (text: string) => {
   return text.split("").map(() => "▓").join("");
 };
@@ -82,7 +79,6 @@ export function ResultScene({
 
   const isPureText = step === "oracle_intro" || step === "oracle_conclusion";
 
-  // Прогресс-бар: oracle_intro=0, карты=пропорционально, conclusion=100
   const progressPercent =
     step === "oracle_intro"
       ? 0
@@ -90,11 +86,8 @@ export function ResultScene({
         ? 100
         : Math.round(((currentIndex + (step === "card_reading" ? 0.7 : 0.3)) / cards.length) * 90 + 5);
 
-  // 1. Декрипт для текста гадания (активируется во второй фазе)
   const shouldDecryptReading = isVisible && step === "card_reading";
   const decryptedReading = useDecrypt(card.text, shouldDecryptReading, 1000);
-
-  // 2. Декрипт для имени карты (активируется одновременно с расшифровкой)
   const shouldDecryptName = isVisible && step === "card_reading";
   const decryptedCardName = useDecrypt(card.card_name.toUpperCase(), shouldDecryptName, 600);
 
@@ -204,7 +197,7 @@ export function ResultScene({
         />
       </div>
 
-      {/* ВЕРХНИЙ ЗАГОЛОВОК (Принудительно статичен на этапе чтения, чтобы не пропадал) */}
+      {/* ВЕРХНИЙ ЗАГОЛОВОК */}
       <div className="border border-cyan-500/30 bg-black/70 p-3 mb-4 w-full text-center text-xs font-mono tracking-[0.5px] text-cyan-400 shadow-[0_0_12px_rgba(34,211,238,0.15)] min-h-[42px] flex items-center justify-center font-bold">
         <span>{step === "card_reading" ? POSITION_TITLES[card.position] : displayedTitle}</span>
         {(step === "oracle_intro" || step === "card_intro" || step === "oracle_conclusion") &&
@@ -224,7 +217,7 @@ export function ResultScene({
           <span className="text-cyan-300 text-sm font-bold font-mono tracking-widest drop-shadow-[0_0_5px_rgba(34,211,238,0.4)]">
             [ {step === "card_intro" ? getCipherPlaceholder(card.card_name) : decryptedCardName} ]
           </span>
-          {/* Reversed (Отображается только на этапе расшифровки, сохраняя интригу) */}
+          {/* Reversed*/}
           {card.is_reversed && step === "card_reading" && (
             <span className="text-[10px] font-mono font-black text-rose-500 border border-rose-500/35 px-2 py-[2px] tracking-widest drop-shadow-[0_0_6px_rgba(244,63,94,0.5)]">
               REVERSED
@@ -237,7 +230,6 @@ export function ResultScene({
       {showCard && (
         <div className="mb-4 flex justify-center">
           {step === "card_intro" ? (
-            // 1. Рубашка карты во время интро (просто статика, без переворота)
             <div
               className={`relative rounded-lg border ${
                 card.is_reversed ? "border-rose-500/70" : "border-cyan-400/80"
@@ -245,6 +237,7 @@ export function ResultScene({
               style={{
                 width: "13rem",
                 height: "24rem",
+                aspectRatio: "9/16",
                 boxShadow: card.is_reversed
                   ? "0 0 20px rgba(244,63,94,0.45), inset 0 0 10px rgba(244,63,94,0.15)"
                   : "0 0 20px rgba(34,211,238,0.45), inset 0 0 10px rgba(34,211,238,0.15)",
@@ -258,15 +251,12 @@ export function ResultScene({
               />
             </div>
           ) : (
-            // 2. Твоя крутая холст-материализация при расшифровке (без переворота для Reversed)
             <CardReveal
               key={`${currentIndex}-${step}`}
               revealKey={`${currentIndex}-${step}`}
               src={`/cards/${card.card_id}.webp`}
               alt={card.card_name}
-              isReversed={false}
-              width="14rem"
-              height="25rem"
+              isReversed={card.is_reversed}
             />
           )}
         </div>
