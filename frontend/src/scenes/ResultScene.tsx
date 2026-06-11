@@ -47,6 +47,7 @@ interface ResultSceneProps {
   cards: CardInterpretation[];
   intro?: string;
   conclusion?: string;
+  onScrollToTop?: () => void;
   onReset: () => void;
 }
 
@@ -68,6 +69,7 @@ export function ResultScene({
   cards,
   intro,
   conclusion,
+  onScrollToTop,
   onReset,
 }: ResultSceneProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -102,6 +104,7 @@ export function ResultScene({
   );
 
   const handleNext = () => {
+    onScrollToTop?.();
     if (step === "oracle_intro") {
       setStep("card_intro");
     } else if (step === "card_intro") {
@@ -119,6 +122,7 @@ export function ResultScene({
   };
 
   const handlePrev = () => {
+    onScrollToTop?.();
     if (step === "card_intro") {
       if (currentIndex > 0) {
         setCurrentIndex((prev) => prev - 1);

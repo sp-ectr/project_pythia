@@ -429,7 +429,7 @@ export function HomeScreen() {
               style={{
                 opacity: terminalVisible ? 1 : 0,
                 transition: "opacity 0.3s ease",
-                height: scene === "result" ? "100%" : "auto",
+                height: "auto",
               }}
               className="flex flex-col w-full"
             >
@@ -665,6 +665,7 @@ export function HomeScreen() {
                     cards={readingResult.card_interpretations}
                     intro={readingResult.intro}
                     conclusion={readingResult.conclusion}
+                    onScrollToTop={scrollToTop}
                     onReset={() => {
                       setIsReading(false);
                       switchScene("greeting");
