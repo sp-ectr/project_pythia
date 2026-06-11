@@ -46,6 +46,14 @@ interface OracleResponse {
 
 // ── ГЛАВНЫЙ КОМПОНЕНТ ─────────────────────────────────────────────
 export function HomeScreen() {
+  const terminalRef = useRef<HTMLDivElement>(null);
+
+  const scrollToTop = () => {
+    if (terminalRef.current) {
+      terminalRef.current.scrollTo(0, 0);
+    }
+  };
+
   const [homeText, setHomeText] = useState("");
   const [homePaused, setHomePaused] = useState(false);
   const [pythiaVisible, setPythiaVisible] = useState(false);
@@ -111,6 +119,7 @@ export function HomeScreen() {
 
   // ── Смена сцены ────────────────────────────────────────────────
   const switchScene = (next: Scene) => {
+    scrollToTop();
     setSceneVisible(false);
     setTimeout(() => {
       setScene(next);
@@ -166,6 +175,7 @@ export function HomeScreen() {
 
   // ── INIT SESSION ───────────────────────────────────────────────
   const handleInitSession = () => {
+    scrollToTop();
     setIsReading(true);
 
     // Проверяем баланс токенов при старте сессии
@@ -282,7 +292,7 @@ export function HomeScreen() {
   }, []);
 
   return (
-    <div className="h-screen bg-black text-slate-200 flex items-center justify-center overflow-hidden font-mono">
+    <div className="min-h-screen bg-black text-slate-200 flex items-center justify-center overflow-hidden font-mono">
       <div
         className="flex flex-col relative overflow-hidden border border-slate-800 shadow-[0_0_60px_rgba(0,0,0,0.9)] bg-black"
         style={{ width: "390px", height: "844px" }}
@@ -411,15 +421,9 @@ export function HomeScreen() {
         {/* ТЕРМИНАЛ (после INIT) */}
         {isReading && (
           <div
-            className={`absolute left-0 w-full h-full z-30 px-6 font-mono text-sm ${
-              scene === "result"
-                ? "overflow-y-auto flex flex-col"
-                : "overflow-y-auto"
-            }`}
-            style={{
-              paddingTop:
-                scene === "result" ? "0" : scene === "loading" ? "78%" : "28%",
-            }}
+            ref={terminalRef}
+            className="absolute left-0 w-full h-full z-30 px-6 font-mono text-sm overflow-y-auto"
+            style={{ paddingTop: scene === "result" ? "0" : scene === "loading" ? "78%" : "28%" }}
           >
             <div
               style={{

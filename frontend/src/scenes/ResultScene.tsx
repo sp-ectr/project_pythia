@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect} from "react";
 import { TerminalButton } from "../components/ui/TerminalButton";
 import { Cursor } from "../components/ui/Cursor";
 import { useDecrypt } from "../hooks/useDecrypt";
@@ -76,8 +76,6 @@ export function ResultScene({
   const [displayedText, setDisplayedText] = useState("");
   const [typingDone, setTypingDone] = useState(false);
 
-  const scrollRef = useRef<HTMLDivElement>(null);
-
   const card = cards[currentIndex];
 
   const isPureText = step === "oracle_intro" || step === "oracle_conclusion";
@@ -103,22 +101,7 @@ export function ResultScene({
     600,
   );
 
-  const scrollToTop = () => {
-    if (scrollRef.current) {
-      const parent = scrollRef.current.closest(
-        ".overflow-y-auto",
-      ) as HTMLElement;
-      console.log("scrollRef div:", scrollRef.current);
-      console.log("found parent:", parent);
-      console.log("parent scrollTop before:", parent?.scrollTop);
-      if (parent) {
-        parent.scrollTop = 0;
-      }
-    }
-  };
-
   const handleNext = () => {
-    scrollToTop();
     if (step === "oracle_intro") {
       setStep("card_intro");
     } else if (step === "card_intro") {
@@ -136,7 +119,6 @@ export function ResultScene({
   };
 
   const handlePrev = () => {
-    scrollToTop();
     if (step === "card_intro") {
       if (currentIndex > 0) {
         setCurrentIndex((prev) => prev - 1);
@@ -204,7 +186,9 @@ export function ResultScene({
   const showCard = step === "card_intro" || step === "card_reading";
 
   return (
-    <div ref={scrollRef} className="flex flex-col items-center w-full">
+    <div
+      className="h-full flex flex-col items-center w-full overflow-y-auto"
+    >
       {/* PROGRESS BAR */}
       <div className="w-full mb-4 h-[2px] bg-cyan-500/10 rounded-full overflow-hidden">
         <div
