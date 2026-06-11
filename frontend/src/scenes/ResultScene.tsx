@@ -105,11 +105,14 @@ export function ResultScene({
 
   const scrollToTop = () => {
     if (scrollRef.current) {
-      scrollRef.current.scrollTop = 0;
-
-      const scrollableParent = scrollRef.current.closest(".overflow-y-auto") as HTMLElement;
-      if (scrollableParent) {
-        scrollableParent.scrollTop = 0;
+      const parent = scrollRef.current.closest(
+        ".overflow-y-auto",
+      ) as HTMLElement;
+      console.log("scrollRef div:", scrollRef.current);
+      console.log("found parent:", parent);
+      console.log("parent scrollTop before:", parent?.scrollTop);
+      if (parent) {
+        parent.scrollTop = 0;
       }
     }
   };
@@ -201,10 +204,7 @@ export function ResultScene({
   const showCard = step === "card_intro" || step === "card_reading";
 
   return (
-    <div
-      ref={scrollRef}
-      className="h-full flex flex-col items-center w-full overflow-y-auto"
-    >
+    <div ref={scrollRef} className="flex flex-col items-center w-full">
       {/* PROGRESS BAR */}
       <div className="w-full mb-4 h-[2px] bg-cyan-500/10 rounded-full overflow-hidden">
         <div
