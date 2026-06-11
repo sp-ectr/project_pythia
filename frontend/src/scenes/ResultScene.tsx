@@ -3,7 +3,7 @@ import { TerminalButton } from "../components/ui/TerminalButton";
 import { Cursor } from "../components/ui/Cursor";
 import { useDecrypt } from "../hooks/useDecrypt";
 import { CardReveal } from "../components/ui/CardReveal";
-import backImg from "../assets/back.webp"; 
+import backImg from "../assets/back.webp";
 
 // Утвержденные описания позиций
 const POSITION_TITLES: Record<number, string> = {
@@ -56,9 +56,11 @@ type StepState =
   | "card_reading"
   | "oracle_conclusion";
 
-
 const getCipherPlaceholder = (text: string) => {
-  return text.split("").map(() => "▓").join("");
+  return text
+    .split("")
+    .map(() => "▓")
+    .join("");
 };
 
 export function ResultScene({
@@ -80,42 +82,41 @@ export function ResultScene({
 
   const isPureText = step === "oracle_intro" || step === "oracle_conclusion";
 
-  // Прогресс-бар
   const progressPercent =
     step === "oracle_intro"
       ? 0
       : step === "oracle_conclusion"
         ? 100
-        : Math.round(((currentIndex + (step === "card_reading" ? 0.7 : 0.3)) / cards.length) * 90 + 5);
+        : Math.round(
+            ((currentIndex + (step === "card_reading" ? 0.7 : 0.3)) /
+              cards.length) *
+              90 +
+              5,
+          );
 
-  // 1. Декрипт для текста гадания
   const shouldDecryptReading = isVisible && step === "card_reading";
   const decryptedReading = useDecrypt(card.text, shouldDecryptReading, 1000);
-
-  // 2. Декрипт для имени карты
   const shouldDecryptName = isVisible && step === "card_reading";
-  const decryptedCardName = useDecrypt(card.card_name.toUpperCase(), shouldDecryptName, 600);
+  const decryptedCardName = useDecrypt(
+    card.card_name.toUpperCase(),
+    shouldDecryptName,
+    600,
+  );
 
-  // МОДИФИКАЦИЯ: Декларативный скролл-эффект. Срабатывает строго ПОСЛЕ коммита изменений в DOM
-  useEffect(() => {
-    if (!isVisible) return;
-    
-    // Мгновенный сброс в 0, чтобы экран не дергался во время смены стейта
+  const scrollToTop = () => {
     if (scrollRef.current) {
-      scrollRef.current.scrollTop = 0;
-    }
+      const scrollableParent = scrollRef.current.closest(".overflow-y-auto");
 
-    // Плавный доводчик наверх с микро-задержкой для стабильности в WebApp
-    const timer = setTimeout(() => {
-      if (scrollRef.current) {
+      if (scrollableParent) {
+        scrollableParent.scrollTo({ top: 0, behavior: "smooth" });
+      } else {
         scrollRef.current.scrollTo({ top: 0, behavior: "smooth" });
       }
-    }, 40);
-
-    return () => clearTimeout(timer);
-  }, [currentIndex, step, isVisible]);
+    }
+  };
 
   const handleNext = () => {
+    scrollToTop();
     if (step === "oracle_intro") {
       setStep("card_intro");
     } else if (step === "card_intro") {
@@ -133,6 +134,7 @@ export function ResultScene({
   };
 
   const handlePrev = () => {
+    scrollToTop();
     if (step === "card_intro") {
       if (currentIndex > 0) {
         setCurrentIndex((prev) => prev - 1);
@@ -200,8 +202,10 @@ export function ResultScene({
   const showCard = step === "card_intro" || step === "card_reading";
 
   return (
-    <div ref={scrollRef} className="h-full flex flex-col items-center w-full overflow-y-auto">
-
+    <div
+      ref={scrollRef}
+      className="h-full flex flex-col items-center w-full overflow-y-auto"
+    >
       {/* PROGRESS BAR */}
       <div className="w-full mb-4 h-[2px] bg-cyan-500/10 rounded-full overflow-hidden">
         <div
@@ -215,8 +219,14 @@ export function ResultScene({
 
       {/* ВЕРХНИЙ ЗАГОЛОВОК */}
       <div className="border border-cyan-500/30 bg-black/70 p-3 mb-4 w-full text-center text-xs font-mono tracking-[0.5px] text-cyan-400 shadow-[0_0_12px_rgba(34,211,238,0.15)] min-h-[42px] flex items-center justify-center font-bold">
-        <span>{step === "card_reading" ? POSITION_TITLES[card.position] : displayedTitle}</span>
-        {(step === "oracle_intro" || step === "card_intro" || step === "oracle_conclusion") &&
+        <span>
+          {step === "card_reading"
+            ? POSITION_TITLES[card.position]
+            : displayedTitle}
+        </span>
+        {(step === "oracle_intro" ||
+          step === "card_intro" ||
+          step === "oracle_conclusion") &&
           !typingDone && (
             <span className="inline-block w-[2px] h-[10px] bg-cyan-400 ml-1 animate-pulse" />
           )}
@@ -225,12 +235,19 @@ export function ResultScene({
       {/* НАЗВАНИЕ КАРТЫ + ПОЗИЦИЯ */}
       {showCard && (
         <div className="flex items-center justify-center gap-2 mb-4 w-full flex-wrap">
+          {/* Бейдж позиции */}
           <span className="text-[10px] font-mono text-cyan-400/60 border border-cyan-500/25 px-2 py-[2px] tracking-widest">
             {currentIndex + 1} / {cards.length}
           </span>
+          {/* Название (Декриптуется только при переходе к card_reading) */}
           <span className="text-cyan-300 text-sm font-bold font-mono tracking-widest drop-shadow-[0_0_5px_rgba(34,211,238,0.4)]">
-            [ {step === "card_intro" ? getCipherPlaceholder(card.card_name) : decryptedCardName} ]
+            [{" "}
+            {step === "card_intro"
+              ? getCipherPlaceholder(card.card_name)
+              : decryptedCardName}{" "}
+            ]
           </span>
+          {/* Reversed*/}
           {card.is_reversed && step === "card_reading" && (
             <span className="text-[10px] font-mono font-black text-rose-500 border border-rose-500/35 px-2 py-[2px] tracking-widest drop-shadow-[0_0_6px_rgba(244,63,94,0.5)]">
               REVERSED
@@ -276,9 +293,11 @@ export function ResultScene({
       )}
 
       {/* ТЕКСТ */}
-      <div className={`leading-7 text-slate-300 text-[15px] border-l-2 border-cyan-500/40 pl-4 mb-5 w-full whitespace-pre-wrap overflow-hidden font-mono ${
-        isPureText ? "min-h-0" : "min-h-[110px] flex-1"
-      }`}>
+      <div
+        className={`leading-7 text-slate-300 text-[15px] border-l-2 border-cyan-500/40 pl-4 mb-5 w-full whitespace-pre-wrap overflow-hidden font-mono ${
+          isPureText ? "min-h-0" : "min-h-[110px] flex-1"
+        }`}
+      >
         {step === "card_reading" ? decryptedReading : displayedText}
         <Cursor
           isBlinking={
