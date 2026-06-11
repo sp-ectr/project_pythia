@@ -46,12 +46,25 @@ interface OracleResponse {
 
 // ── ГЛАВНЫЙ КОМПОНЕНТ ─────────────────────────────────────────────
 export function HomeScreen() {
+  const containerRef = useRef<HTMLDivElement>(null);
   const terminalRef = useRef<HTMLDivElement>(null);
 
   const scrollToTop = () => {
-    if (terminalRef.current) {
-      terminalRef.current.scrollTo(0, 0);
+    window.scrollTo(0, 0);
+    document.documentElement.scrollTop = 0;
+    document.body.scrollTop = 0;
+    if (containerRef.current) {
+      containerRef.current.scrollTop = 0;
     }
+    if (terminalRef.current) {
+      terminalRef.current.scrollTop = 0;
+    }
+    const allScrollable = document.querySelectorAll(
+      ".overflow-y-auto, .overflow-auto, [style*='overflow'], [style*='scroll']",
+    );
+    allScrollable.forEach((el) => {
+      (el as HTMLElement).scrollTop = 0;
+    });
   };
 
   const [homeText, setHomeText] = useState("");
@@ -294,6 +307,7 @@ export function HomeScreen() {
   return (
     <div className="min-h-screen bg-black text-slate-200 flex items-center justify-center overflow-hidden font-mono">
       <div
+        ref={containerRef}
         className="flex flex-col relative overflow-hidden border border-slate-800 shadow-[0_0_60px_rgba(0,0,0,0.9)] bg-black"
         style={{ width: "390px", height: "844px" }}
       >
