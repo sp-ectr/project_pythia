@@ -105,12 +105,11 @@ export function ResultScene({
 
   const scrollToTop = () => {
     if (scrollRef.current) {
-      const scrollableParent = scrollRef.current.closest(".overflow-y-auto");
+      scrollRef.current.scrollTop = 0;
 
+      const scrollableParent = scrollRef.current.closest(".overflow-y-auto") as HTMLElement;
       if (scrollableParent) {
-        scrollableParent.scrollTo({ top: 0, behavior: "smooth" });
-      } else {
-        scrollRef.current.scrollTo({ top: 0, behavior: "smooth" });
+        scrollableParent.scrollTop = 0;
       }
     }
   };
