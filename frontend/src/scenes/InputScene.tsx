@@ -1,7 +1,6 @@
 import { useEffect, useRef } from "react";
 import { TerminalButton } from "../components/ui/TerminalButton";
 import { Cursor } from "../components/ui/Cursor";
-import { playSound } from "../utils/sound";
 
 interface InputSceneProps {
   isVisible: boolean;
@@ -48,9 +47,6 @@ export function InputScene({
     const type = () => {
       if (i < fullIntro.length) {
         setInputIntroText(fullIntro.slice(0, i + 1));
-        if (fullIntro[i] !== " " && fullIntro[i] !== "\n") {
-          playSound("/sounds/typing-click.mp3", 0.7);
-        }
         i++;
         timer = setTimeout(type, 45);
       } else {

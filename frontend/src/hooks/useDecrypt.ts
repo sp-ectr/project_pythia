@@ -1,5 +1,4 @@
 import { useEffect, useRef, useState } from "react";
-import { playSound } from "../utils/sound";
 const CHARS =
   "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()_+-=[]{}|;:,.<>?";
 
@@ -27,7 +26,6 @@ export function useDecrypt(text: string, trigger: boolean, duration = 1000) {
         })
         .join("");
       setDisplayed(result);
-      playSound("/sounds/typing-click.mp3", 0.5);
       iteration++;
       if (iteration <= totalSteps) {
         frame.current = setTimeout(step, intervalMs);

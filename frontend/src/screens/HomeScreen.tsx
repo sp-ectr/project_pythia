@@ -248,7 +248,7 @@ export function HomeScreen() {
       si++;
       setSubtitleText(subtitleFull.slice(0, si));
       if (subtitleFull[si - 1] !== " " && subtitleFull[si - 1] !== "]") {
-        playSound("/sounds/typing-click.mp3", 0.7);
+        playSound("/sounds/typing-click.mp3", 0.5);
       }
       if (si < subtitleFull.length) {
         subtitleTimeout = setTimeout(typeSubtitle, 80);
@@ -277,7 +277,7 @@ export function HomeScreen() {
         return;
       }
       if (currentChar !== " ") {
-        playSound("/sounds/typing-click.mp3", 0.7);
+        playSound("/sounds/typing-click.mp3", 0.5);
       }
       setHomePaused(false);
       homeTimeout = setTimeout(typeHomeText, 45);
