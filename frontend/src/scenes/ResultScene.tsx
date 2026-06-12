@@ -5,7 +5,6 @@ import { useDecrypt } from "../hooks/useDecrypt";
 import { CardReveal } from "../components/ui/CardReveal";
 import backImg from "../assets/back.webp";
 
-// Утвержденные описания позиций
 const POSITION_TITLES: Record<number, string> = {
   1: "1 — Карта (суть текущего момента)",
   2: "2 — Карта препятствия или усилителя",
@@ -19,7 +18,6 @@ const POSITION_TITLES: Record<number, string> = {
   10: "10 — Карта итога",
 };
 
-// Системные описания позиций
 const POSITION_EXPLANATIONS: Record<number, string> = {
   1: 'это "снимок системы сейчас", как выглядит ситуация прямо в этой точке без оценок;',
   2: "то, что либо тормозит процесс, либо наоборот подталкивает его и меняет динамику;",
@@ -138,7 +136,6 @@ export function ResultScene({
     }
   };
 
-  // Эффект печати для фаз интро
   useEffect(() => {
     if (!isVisible) return;
     if (step === "card_reading") return;
@@ -193,7 +190,6 @@ export function ResultScene({
     <div
       className="h-full flex flex-col items-center w-full overflow-y-auto"
     >
-      {/* PROGRESS BAR */}
       <div className="w-full mb-4 h-[2px] bg-cyan-500/10 rounded-full overflow-hidden">
         <div
           className="h-full rounded-full transition-all duration-700 ease-out"
@@ -204,7 +200,6 @@ export function ResultScene({
         />
       </div>
 
-      {/* ВЕРХНИЙ ЗАГОЛОВОК */}
       <div className="border border-cyan-500/30 bg-black/70 p-3 mb-4 w-full text-center text-xs font-mono tracking-[0.5px] text-cyan-400 shadow-[0_0_12px_rgba(34,211,238,0.15)] min-h-[42px] flex items-center justify-center font-bold">
         <span>
           {step === "card_reading"
@@ -219,14 +214,11 @@ export function ResultScene({
           )}
       </div>
 
-      {/* НАЗВАНИЕ КАРТЫ + ПОЗИЦИЯ */}
       {showCard && (
         <div className="flex items-center justify-center gap-2 mb-4 w-full flex-wrap">
-          {/* Бейдж позиции */}
           <span className="text-[10px] font-mono text-cyan-400/60 border border-cyan-500/25 px-2 py-[2px] tracking-widest">
             {currentIndex + 1} / {cards.length}
           </span>
-          {/* Название (Декриптуется только при переходе к card_reading) */}
           <span className="text-cyan-300 text-sm font-bold font-mono tracking-widest drop-shadow-[0_0_5px_rgba(34,211,238,0.4)]">
             [{" "}
             {step === "card_intro"
@@ -234,7 +226,6 @@ export function ResultScene({
               : decryptedCardName}{" "}
             ]
           </span>
-          {/* Reversed*/}
           {card.is_reversed && step === "card_reading" && (
             <span className="text-[10px] font-mono font-black text-rose-500 border border-rose-500/35 px-2 py-[2px] tracking-widest drop-shadow-[0_0_6px_rgba(244,63,94,0.5)]">
               REVERSED
@@ -243,7 +234,6 @@ export function ResultScene({
         </div>
       )}
 
-      {/* КАРТА — либо рубашка в интро, либо материализация в ридинге */}
       {showCard && (
         <div className="mb-4 flex justify-center">
           {step === "card_intro" ? (
@@ -279,7 +269,6 @@ export function ResultScene({
         </div>
       )}
 
-      {/* ТЕКСТ */}
       <div
         className={`leading-7 text-slate-300 text-[15px] border-l-2 border-cyan-500/40 pl-4 mb-5 w-full whitespace-pre-wrap overflow-hidden font-mono ${
           isPureText ? "min-h-0" : "min-h-[110px] flex-1"
@@ -295,7 +284,6 @@ export function ResultScene({
         />
       </div>
 
-      {/* КНОПКИ */}
       <div className={`flex gap-3 w-full ${isPureText ? "mt-6" : "mt-auto"}`}>
         {step !== "oracle_intro" && (
           <TerminalButton variant="cancel" onClick={handlePrev}>

@@ -11,6 +11,7 @@ import { LoadingScene } from "../scenes/LoadingScene";
 import { RulesScene } from "../scenes/RulesScene";
 import { TokensScene } from "../scenes/TokensScene";
 import { ResultScene } from "../scenes/ResultScene";
+import { ProtocolScene } from "../scenes/ProtocolScene";
 
 type Scene =
   | "greeting"
@@ -19,15 +20,14 @@ type Scene =
   | "rules"
   | "input"
   | "loading"
-  | "result";
+  | "result"
+  | "protocol";
 
-// ── КОНСТАНТЫ ────────────────────────────────────────────────────
 const TOTAL_CARDS = 77;
 const MIN_LOADING_MS = 4000;
 const CARD_FLIP_INTERVAL = 1400;
 const RECORDING_MAX_MS = 9000;
 
-// ── Интерфейсы ────────────────────────────────────────────────────
 interface CardInterpretation {
   position: number;
   position_meaning: string;
@@ -44,7 +44,6 @@ interface OracleResponse {
   card_interpretations: CardInterpretation[];
 }
 
-// ── ГЛАВНЫЙ КОМПОНЕНТ ─────────────────────────────────────────────
 export function HomeScreen() {
   const containerRef = useRef<HTMLDivElement>(null);
   const terminalRef = useRef<HTMLDivElement>(null);
@@ -70,13 +69,11 @@ export function HomeScreen() {
   const [terminalVisible, setTerminalVisible] = useState(false);
   const [sceneVisible, setSceneVisible] = useState(false);
 
-  // Печатный текст
   const [oracleGreeting, setOracleGreeting] = useState("");
   const [greetingDone, setGreetingDone] = useState(false);
   const [oracleWarning, setOracleWarning] = useState("");
   const [warningDone, setWarningDone] = useState(false);
 
-  // Input сцена
   const [inputIntroDone, setInputIntroDone] = useState(false);
   const [inputIntroText, setInputIntroText] = useState("");
   const [inputMode, setInputMode] = useState<"choose" | "voice" | "text">(
@@ -90,7 +87,6 @@ export function HomeScreen() {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const recordingTimerRef = useRef<ReturnType<typeof setTimeout>>(null);
 
-  // Loading стейты
   const [currentCardId, setCurrentCardId] = useState(0);
   const [apiDone, setApiDone] = useState(false);
   const [minTimeDone, setMinTimeDone] = useState(false);
@@ -98,7 +94,6 @@ export function HomeScreen() {
   const cardFlipRef = useRef<ReturnType<typeof setInterval>>(null);
   const canProceed = apiDone && minTimeDone;
 
-  // Result стейты
   const [readingResult, setReadingResult] = useState<OracleResponse | null>(
     null,
   );
@@ -106,7 +101,6 @@ export function HomeScreen() {
   const userId = "471019051";
   const neuroTokens = 1;
 
-  // Decrypt
   const statusLine1 = useDecrypt(
     `NODE_ID: ${userId} // AUTH_LEVEL: GUEST`,
     terminalVisible,
@@ -123,7 +117,6 @@ export function HomeScreen() {
     1000,
   );
 
-  // ── Смена сцены ────────────────────────────────────────────────
   const switchScene = (next: Scene) => {
     scrollToTop();
     setSceneVisible(false);
@@ -141,7 +134,6 @@ export function HomeScreen() {
     }, 350);
   };
 
-  // ── Запуск загрузки (полная логика) ────────────────────────────
   const startLoading = () => {
     switchScene("loading");
     setApiDone(false);
@@ -161,11 +153,9 @@ export function HomeScreen() {
       setTimeout(() => setLoadingStatus(s), i * 1000);
     });
 
-    // Имитация API
     setTimeout(() => setApiDone(true), 2500 + Math.random() * 3000);
   };
 
-  // ── Тасование карт во время загрузки ───────────────────────────
   useEffect(() => {
     if (scene !== "loading") {
       if (cardFlipRef.current) clearInterval(cardFlipRef.current);
@@ -179,12 +169,10 @@ export function HomeScreen() {
     };
   }, [scene]);
 
-  // ── INIT SESSION ───────────────────────────────────────────────
   const handleInitSession = () => {
     scrollToTop();
     setIsReading(true);
 
-    // Проверяем баланс токенов при старте сессии
     if (neuroTokens <= 0) {
       setScene("tokens");
     } else {
@@ -197,14 +185,12 @@ export function HomeScreen() {
     }, 1300);
   };
 
-  // Фокус на textarea
   useEffect(() => {
     if (inputMode === "text" && textareaRef.current) {
       setTimeout(() => textareaRef.current?.focus(), 100);
     }
   }, [inputMode]);
 
-  // ── Запись голоса
   const handleVoice = async () => {
     setRecordingError("");
     try {
@@ -227,7 +213,6 @@ export function HomeScreen() {
         setIsRecording(false);
         if (recordingTimerRef.current) clearTimeout(recordingTimerRef.current);
         stream.getTracks().forEach((t) => t.stop());
-        // TODO: обработка аудио
       };
 
       mediaRecorder.start();
@@ -251,7 +236,6 @@ export function HomeScreen() {
     mediaRecorderRef.current?.stop();
   };
 
-  // ── HOME анимации
   useEffect(() => {
     const pythiaTimer = setTimeout(() => setPythiaVisible(true), 300);
     const subtitleFull = "[ DIGITAL_TARO_BOT ]";
@@ -425,7 +409,6 @@ export function HomeScreen() {
           </div>
         )}
 
-        {/* ТЕРМИНАЛ (после INIT) */}
         {isReading && (
           <div
             ref={terminalRef}
@@ -440,7 +423,6 @@ export function HomeScreen() {
               }}
               className="flex flex-col w-full"
             >
-              {/* Хедер - СКРЫВАЕМ НА СЦЕНЕ RESULT */}
               {scene !== "result" && scene !== "loading" && (
                 <div className="ml-[45%] mr-[-6%] border border-cyan-500/30 bg-black/70 p-3.5 mb-2 text-cyan-400/90 text-xs tracking-[0.5px]">
                   <span>{statusLine1}</span>
@@ -454,7 +436,6 @@ export function HomeScreen() {
                 </div>
               )}
 
-              {/* Токены - СКРЫВАЕМ НА СЦЕНЕ RESULT */}
               {scene !== "result" && scene !== "loading" && (
                 <div
                   className={`ml-[45%] mr-[-6%] flex flex-col bg-black/50 p-3 mb-5 transition-colors duration-500 ${
@@ -462,7 +443,7 @@ export function HomeScreen() {
                       ? "border-rose-500/25 text-rose-400/90"
                       : "border-cyan-500/20 text-cyan-400/90"
                   }`}
-                  style={{ borderWidth: "1px", borderStyle: "solid" }} // Добавляем рамку, так как в className её нет
+                  style={{ borderWidth: "1px", borderStyle: "solid" }}
                 >
                   <div className="text-xs mb-2">{tokensLabel}</div>
                   <button
@@ -478,7 +459,6 @@ export function HomeScreen() {
                 </div>
               )}
 
-              {/* Сцены */}
               <div
                 style={{
                   opacity: sceneVisible ? 1 : 0,
@@ -495,6 +475,7 @@ export function HomeScreen() {
                         WebApp.close();
                       } catch (e) {}
                     }}
+                    onShowProtocol={() => switchScene("protocol")}
                     oracleGreeting={oracleGreeting}
                     greetingDone={greetingDone}
                     setOracleGreeting={setOracleGreeting}
@@ -518,8 +499,8 @@ export function HomeScreen() {
                 {scene === "tokens" && (
                   <TokensScene
                     isVisible={sceneVisible}
-                    onRecharge={() => {
-                      /* recharge */
+                    onRecharge={(bundleId) => {
+                      console.log("Purchase bundle:", bundleId);
                     }}
                     onCancel={() => {
                       if (neuroTokens <= 0) {
@@ -535,6 +516,13 @@ export function HomeScreen() {
                   <RulesScene
                     isVisible={sceneVisible}
                     onAcknowledge={() => switchScene("warning")}
+                  />
+                )}
+
+                {scene === "protocol" && (
+                  <ProtocolScene
+                    isVisible={sceneVisible}
+                    onBack={() => switchScene("greeting")}
                   />
                 )}
 
@@ -665,7 +653,6 @@ export function HomeScreen() {
                   />
                 )}
 
-                {/* Сцена результата */}
                 {scene === "result" && readingResult?.card_interpretations && (
                   <ResultScene
                     isVisible={sceneVisible}

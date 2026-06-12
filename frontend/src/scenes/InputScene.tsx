@@ -5,18 +5,14 @@ import { Cursor } from "../components/ui/Cursor";
 interface InputSceneProps {
   isVisible: boolean;
   onAsk: (question: string) => void;
-  // Текст intro
   inputIntroText: string;
   inputIntroDone: boolean;
   setInputIntroText: (val: string) => void;
   setInputIntroDone: (val: boolean) => void;
-  // Режим ввода
   inputMode: "choose" | "voice" | "text";
   setInputMode: (val: "choose" | "voice" | "text") => void;
-  // Текстовый вопрос
   textQuestion: string;
   setTextQuestion: (val: string) => void;
-  // Голосовое управление
   isRecording: boolean;
   recordingError: string;
   onVoiceStart: () => void;
@@ -41,7 +37,6 @@ export function InputScene({
 }: InputSceneProps) {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
-  // Печать intro
   useEffect(() => {
     if (!isVisible) return;
     setInputIntroText("");
@@ -62,7 +57,6 @@ export function InputScene({
     return () => clearTimeout(timer);
   }, [isVisible]);
 
-  // Автофокус на textarea
   useEffect(() => {
     if (inputMode === "text" && textareaRef.current) {
       setTimeout(() => textareaRef.current?.focus(), 100);
@@ -73,7 +67,6 @@ export function InputScene({
 
   return (
     <div>
-      {/* Блок с печатающимся текстом */}
       <div className="leading-relaxed text-slate-200 mb-6 border-l-2 border-cyan-400/30 pl-4 text-[14px] whitespace-pre-wrap">
         {inputIntroText}
         {!inputIntroDone && <Cursor isBlinking={true} />}
@@ -81,7 +74,6 @@ export function InputScene({
 
       {inputIntroDone && (
         <>
-          {/* Выбор способа ввода */}
           {inputMode === "choose" && (
             <div className="flex flex-col gap-3">
               {recordingError && (
@@ -101,7 +93,6 @@ export function InputScene({
             </div>
           )}
 
-          {/* Голосовой режим */}
           {inputMode === "voice" && (
             <div className="flex flex-col gap-3">
               <div className="border border-cyan-500/30 bg-black/60 p-4 text-center">
@@ -153,7 +144,6 @@ export function InputScene({
             </div>
           )}
 
-          {/* Текстовый режим */}
           {inputMode === "text" && (
             <div className="flex flex-col gap-3 w-full">
               <div className="border border-cyan-500/30 bg-black/60 p-1 relative">
@@ -163,10 +153,9 @@ export function InputScene({
                   onChange={(e) => setTextQuestion(e.target.value)}
                   placeholder="Введите ваш вопрос..."
                   rows={4}
-                  maxLength={100} // Лимит ввода на уровне браузера
+                  maxLength={100}
                   className="w-full bg-transparent text-slate-200 text-[13.5px] leading-relaxed placeholder:text-slate-600 resize-none outline-none p-3 pb-8 font-mono tracking-wide caret-cyan-400"
                 />
-                {/* Пиксельный счетчик символов в углу textarea */}
                 <div className="absolute bottom-2 right-3 text-[10px] font-mono text-cyan-400/40">
                   {textQuestion.length} / 100
                 </div>
@@ -179,7 +168,6 @@ export function InputScene({
                       onAsk(textQuestion);
                     }
                   }}
-                  // Блокируем кнопку, если пусто или превышен лимит
                   disabled={!textQuestion.trim() || textQuestion.length > 100}
                   className={`flex-1 py-4 font-mono uppercase tracking-[0.35em] text-xs border rounded-md transition-all duration-300 active:scale-[0.97] ${
                     textQuestion.trim() && textQuestion.length <= 100

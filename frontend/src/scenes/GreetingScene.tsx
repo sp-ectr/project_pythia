@@ -6,6 +6,7 @@ interface GreetingSceneProps {
   isVisible: boolean;
   onStart: () => void;
   onCancel: () => void;
+  onShowProtocol: () => void;
   oracleGreeting: string;
   greetingDone: boolean;
   setOracleGreeting: (val: string) => void;
@@ -16,6 +17,7 @@ export function GreetingScene({
   isVisible,
   onStart,
   onCancel,
+  onShowProtocol,
   oracleGreeting,
   greetingDone,
   setOracleGreeting,
@@ -67,13 +69,12 @@ export function GreetingScene({
             [ cancel ]
           </TerminalButton>
 
-          <a
-            href="/policy"
-            target="_blank"
+          <button
+            onClick={onShowProtocol}
             className="text-center text-cyan-300/70 hover:text-cyan-300 transition-colors text-[11px]"
           >
             [ by starting you accept the system protocol ]
-          </a>
+          </button>
         </div>
       </>
     )}

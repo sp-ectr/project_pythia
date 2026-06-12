@@ -66,11 +66,9 @@ export function CardReveal({
 
         ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-        // фон пустоты
         ctx.fillStyle = "rgba(3,6,15,1)";
         ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-        // цифровая пыль
         particles.forEach((p) => {
           const appearThreshold =
             (p.y / canvas.height) * 0.8;
@@ -89,12 +87,10 @@ export function CardReveal({
           }
         });
 
-        // постепенное проявление карты
         ctx.save();
 
         ctx.globalAlpha = Math.pow(progress, 1.7);
 
-        // glitch reveal
         const slices = 24;
 
         for (let i = 0; i < slices; i++) {
@@ -121,7 +117,6 @@ export function CardReveal({
 
         ctx.restore();
 
-        // энергетическая волна сборки
         const waveY =
           canvas.height * progress;
 
@@ -145,7 +140,6 @@ export function CardReveal({
           20
         );
 
-        // финальный clean render
         if (progress >= 1) {
           ctx.clearRect(
             0,
