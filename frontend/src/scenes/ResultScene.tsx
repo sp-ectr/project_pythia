@@ -46,6 +46,7 @@ interface ResultSceneProps {
   intro?: string;
   conclusion?: string;
   onScrollToTop?: () => void;
+  onShowFeedback?: () => void;
   onReset: () => void;
 }
 
@@ -68,6 +69,7 @@ export function ResultScene({
   intro,
   conclusion,
   onScrollToTop,
+  onShowFeedback,
   onReset,
 }: ResultSceneProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -115,7 +117,7 @@ export function ResultScene({
         setStep("oracle_conclusion");
       }
     } else if (step === "oracle_conclusion") {
-      onReset();
+      onShowFeedback ? onShowFeedback() : onReset();
     }
   };
 
@@ -298,7 +300,7 @@ export function ResultScene({
               : step === "card_reading" && currentIndex === cards.length - 1
                 ? "[ show conclusion ]"
                 : step === "oracle_conclusion"
-                  ? "[ finish ]"
+                  ? onShowFeedback ? "[ rate session ]" : "[ finish ]"
                   : "[ next ]"}
         </TerminalButton>
       </div>

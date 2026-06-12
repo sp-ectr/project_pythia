@@ -12,6 +12,7 @@ import { RulesScene } from "../scenes/RulesScene";
 import { TokensScene } from "../scenes/TokensScene";
 import { ResultScene } from "../scenes/ResultScene";
 import { ProtocolScene } from "../scenes/ProtocolScene";
+import { FeedbackScene } from "../scenes/FeedbackScene";
 
 type Scene =
   | "greeting"
@@ -21,7 +22,8 @@ type Scene =
   | "input"
   | "loading"
   | "result"
-  | "protocol";
+  | "protocol"
+  | "feedback";
 
 const TOTAL_CARDS = 77;
 const MIN_LOADING_MS = 4000;
@@ -660,7 +662,21 @@ export function HomeScreen() {
                     intro={readingResult.intro}
                     conclusion={readingResult.conclusion}
                     onScrollToTop={scrollToTop}
+                    onShowFeedback={() => switchScene("feedback")}
                     onReset={() => {
+                      setIsReading(false);
+                      switchScene("greeting");
+                    }}
+                  />
+                )}
+
+                {scene === "feedback" && (
+                  <FeedbackScene
+                    isVisible={sceneVisible}
+                    onSubmit={(rating, text) => {
+                      console.log("Feedback:", { rating, text });
+                    }}
+                    onSkip={() => {
                       setIsReading(false);
                       switchScene("greeting");
                     }}
