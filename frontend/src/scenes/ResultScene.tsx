@@ -3,6 +3,7 @@ import { TerminalButton } from "../components/ui/TerminalButton";
 import { Cursor } from "../components/ui/Cursor";
 import { useDecrypt } from "../hooks/useDecrypt";
 import { CardReveal } from "../components/ui/CardReveal";
+import { playSound } from "../utils/sound";
 import backImg from "../assets/back.webp";
 
 const POSITION_TITLES: Record<number, string> = {
@@ -166,12 +167,18 @@ export function ResultScene({
     const titleTimer = setInterval(() => {
       if (titleIdx < activeTitle.length) {
         setDisplayedTitle(activeTitle.slice(0, titleIdx + 1));
+        if (activeTitle[titleIdx] !== " ") {
+          playSound("/sounds/typing-click.mp3", 0.7);
+        }
         titleIdx++;
       } else {
         clearInterval(titleTimer);
         const textTimer = setInterval(() => {
           if (textIdx < activeText.length) {
             setDisplayedText(activeText.slice(0, textIdx + 1));
+            if (activeText[textIdx] !== " " && activeText[textIdx] !== "\n") {
+              playSound("/sounds/typing-click.mp3", 0.7);
+            }
             textIdx++;
           } else {
             clearInterval(textTimer);

@@ -3,6 +3,7 @@ import WebApp from "@twa-dev/sdk";
 import backImg from "../assets/back.webp";
 import { useDecrypt } from "../hooks/useDecrypt";
 import { GlitchCard } from "../components/core/GlitchCard";
+import { playSound } from "../utils/sound";
 import { GreetingScene } from "../scenes/GreetingScene";
 import { Cursor } from "../components/ui/Cursor";
 import { WarningScene } from "../scenes/WarningScene";
@@ -246,6 +247,9 @@ export function HomeScreen() {
     const typeSubtitle = () => {
       si++;
       setSubtitleText(subtitleFull.slice(0, si));
+      if (subtitleFull[si - 1] !== " " && subtitleFull[si - 1] !== "]") {
+        playSound("/sounds/typing-click.mp3", 0.7);
+      }
       if (si < subtitleFull.length) {
         subtitleTimeout = setTimeout(typeSubtitle, 80);
       } else {
@@ -271,6 +275,9 @@ export function HomeScreen() {
           typeHomeText();
         }, 500);
         return;
+      }
+      if (currentChar !== " ") {
+        playSound("/sounds/typing-click.mp3", 0.7);
       }
       setHomePaused(false);
       homeTimeout = setTimeout(typeHomeText, 45);

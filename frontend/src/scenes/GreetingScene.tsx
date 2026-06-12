@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import { TerminalButton } from "../components/ui/TerminalButton";
 import { Cursor } from "../components/ui/Cursor";
+import { playSound } from "../utils/sound";
 
 interface GreetingSceneProps {
   isVisible: boolean;
@@ -36,8 +37,10 @@ export function GreetingScene({
 
     const type = () => {
       if (i < fullGreeting.length) {
-        // Используем slice, как в оригинале — это защищает от выхода за границы
         setOracleGreeting(fullGreeting.slice(0, i + 1));
+        if (fullGreeting[i] !== " " && fullGreeting[i] !== "\n") {
+          playSound("/sounds/typing-click.mp3", 0.7);
+        }
         i++;
         timer = setTimeout(type, 40);
       } else {

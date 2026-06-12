@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { Cursor } from "../components/ui/Cursor";
+import { playSound } from "../utils/sound";
 
 interface BootScreenProps {
   onComplete: () => void;
@@ -31,7 +32,7 @@ export function BootScreen({ onComplete }: BootScreenProps) {
       }
 
       if (currentChar === "\n") {
-        setBootPaused(true); // пауза — мигает
+        setBootPaused(true);
         timeout = setTimeout(() => {
           setBootPaused(false);
           type();
@@ -39,7 +40,11 @@ export function BootScreen({ onComplete }: BootScreenProps) {
         return;
       }
 
-      setBootPaused(false); // печатает — не мигает
+      if (currentChar !== " ") {
+        playSound("/sounds/typing-click.mp3", 0.7);
+      }
+
+      setBootPaused(false);
       timeout = setTimeout(type, 50);
     };
 
