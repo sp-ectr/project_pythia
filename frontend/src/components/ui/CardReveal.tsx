@@ -13,7 +13,7 @@ const TOTAL_DURATION = 1800;
 export function CardReveal({
   src,
   revealKey,
-  isReversed = false,
+  isReversed: _isReversed = false,
 }: CardRevealProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const animRef = useRef<number>(0);
