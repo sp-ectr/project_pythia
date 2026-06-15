@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import WebApp from "@twa-dev/sdk";
 import { BootScreen } from "./screens/BootScreen";
 import { HomeScreen } from "./screens/HomeScreen";
+import { startBgMusic } from "./utils/sound";
 
 type Screen = "TAP" | "BOOT" | "HOME";
 
@@ -19,7 +20,10 @@ export default function App() {
   if (screen === "TAP") {
     return (
       <div
-        onClick={() => setScreen("BOOT")}
+        onClick={() => {
+          setScreen("BOOT");
+          startBgMusic("/sounds/fon.mp3", 0.2);
+        }}
         className="min-h-screen bg-black text-cyan-400 flex flex-col items-center justify-center font-mono cursor-pointer select-none"
       >
         <div className="text-4xl font-black tracking-[0.3em] mb-6 animate-pulse">

@@ -39,7 +39,7 @@ export function GreetingScene({
       if (i < fullGreeting.length) {
         setOracleGreeting(fullGreeting.slice(0, i + 1));
         if (fullGreeting[i] !== " " && fullGreeting[i] !== "\n") {
-          playSound("/sounds/typing-click.mp3", 0.5);
+          playSound("/sounds/Blip7.wav", 0.5);
         }
         i++;
         timer = setTimeout(type, 40);
@@ -73,7 +73,10 @@ export function GreetingScene({
           </TerminalButton>
 
           <button
-            onClick={onShowProtocol}
+            onClick={() => {
+              playSound("/sounds/start.mp3", 0.5);
+              onShowProtocol();
+            }}
             className="text-center text-cyan-300/70 hover:text-cyan-300 transition-colors text-[11px]"
           >
             [ by starting you accept the system protocol ]

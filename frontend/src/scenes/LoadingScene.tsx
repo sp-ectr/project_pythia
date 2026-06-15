@@ -1,5 +1,7 @@
+import { useEffect } from "react";
 import { Ouroboros } from "../components/ui/Ouroboros";
 import { TerminalButton } from "../components/ui/TerminalButton";
+import { playSound } from "../utils/sound";
 
 interface LoadingSceneProps {
   isVisible: boolean;
@@ -17,6 +19,12 @@ export function LoadingScene({
   canProceed,
   onComplete,
 }: LoadingSceneProps) {
+  useEffect(() => {
+    if (apiDone) {
+      playSound("/sounds/decript.mp3", 0.5);
+    }
+  }, [apiDone]);
+
   if (!isVisible) return null;
 
   return (

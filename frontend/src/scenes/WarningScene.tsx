@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import { TerminalButton } from "../components/ui/TerminalButton";
 import { useDecrypt } from "../hooks/useDecrypt";
+import { playSound } from "../utils/sound";
 
 interface WarningSceneProps {
   isVisible: boolean;
@@ -52,7 +53,10 @@ export function WarningScene({
           <span>{lastLine}</span>
           {warningDone && (
             <button
-              onClick={onShowRules}
+              onClick={() => {
+                playSound("/sounds/start.mp3", 0.5);
+                onShowRules();
+              }}
               className="text-rose-400/90 hover:text-rose-300 underline decoration-dotted underline-offset-4 text-sm"
             >
               [ TERMINAL_RULES ]

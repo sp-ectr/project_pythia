@@ -1,6 +1,7 @@
 import { useEffect, useRef } from "react";
 import { TerminalButton } from "../components/ui/TerminalButton";
 import { Cursor } from "../components/ui/Cursor";
+import { playSound } from "../utils/sound";
 
 interface InputSceneProps {
   isVisible: boolean;
@@ -47,6 +48,9 @@ export function InputScene({
     const type = () => {
       if (i < fullIntro.length) {
         setInputIntroText(fullIntro.slice(0, i + 1));
+        if (fullIntro[i] !== " " && fullIntro[i] !== "\n") {
+          playSound("/sounds/Blip7.wav", 0.5);
+        }
         i++;
         timer = setTimeout(type, 45);
       } else {
@@ -165,6 +169,7 @@ export function InputScene({
                 <button
                   onClick={() => {
                     if (textQuestion.trim() && textQuestion.length <= 100) {
+                      playSound("/sounds/start.mp3", 0.5);
                       onAsk(textQuestion);
                     }
                   }}
@@ -179,6 +184,7 @@ export function InputScene({
                 </button>
                 <button
                   onClick={() => {
+                    playSound("/sounds/cancel.mp3", 0.5);
                     setTextQuestion("");
                     setInputMode("choose");
                   }}

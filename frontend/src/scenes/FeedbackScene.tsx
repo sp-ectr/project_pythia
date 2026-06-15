@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { TerminalButton } from "../components/ui/TerminalButton";
+import { playSound } from "../utils/sound";
 
 interface FeedbackSceneProps {
   isVisible: boolean;
@@ -45,7 +46,10 @@ function StarRating({
       {[1, 2, 3, 4, 5].map((n) => (
         <button
           key={n}
-          onClick={() => onRate(n)}
+          onClick={() => {
+            playSound("/sounds/decript.mp3", 0.4);
+            onRate(n);
+          }}
           onMouseEnter={() => setHovered(n)}
           onMouseLeave={() => setHovered(0)}
           className={`text-2xl font-mono transition-all duration-150 ${

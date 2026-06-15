@@ -1,5 +1,6 @@
 import { TerminalButton } from "../components/ui/TerminalButton";
 import { useDecrypt } from "../hooks/useDecrypt";
+import { playSound } from "../utils/sound";
 
 interface Bundle {
   id: string;
@@ -65,7 +66,10 @@ export function TokensScene({
           return (
             <button
               key={b.id}
-              onClick={() => onRecharge(b.id)}
+              onClick={() => {
+                playSound("/sounds/start.mp3", 0.5);
+                onRecharge(b.id);
+              }}
               className="group relative w-full py-4 px-4 font-mono text-xs bg-black border border-cyan-400/30 rounded-md overflow-hidden transition-all duration-300 active:scale-[0.97] hover:border-cyan-400/60 hover:shadow-[0_0_16px_rgba(34,211,238,0.15)]"
             >
               <span className="absolute inset-0 overflow-hidden">

@@ -1,23 +1,19 @@
 import { useEffect, useRef } from "react";
+import { playSound } from "../../utils/sound";
 
 interface CardRevealProps {
   src: string;
   alt: string;
   revealKey: number | string;
+  isReversed?: boolean;
 }
 
 const TOTAL_DURATION = 1800;
 
-interface CardRevealProps {
-  src: string;
-  alt: string;
-  revealKey: number | string;
-  isReversed?: boolean;  
-}
-
 export function CardReveal({
   src,
   revealKey,
+  isReversed = false,
 }: CardRevealProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const animRef = useRef<number>(0);
@@ -30,6 +26,7 @@ export function CardReveal({
 
     img.onload = () => {
       if (!active) return;
+      playSound("/sounds/cardreveal2.wav", 0.5);
 
       const canvas = canvasRef.current;
       if (!canvas) return;

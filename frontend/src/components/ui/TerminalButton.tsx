@@ -1,3 +1,5 @@
+import { playSound } from "../../utils/sound";
+
 export function TerminalButton({
   onClick,
   children,
@@ -16,9 +18,19 @@ export function TerminalButton({
     danger:
       "border-rose-500/40 text-rose-400 shadow-[0_0_12px_rgba(244,63,94,0.15)]",
   };
+
+  const handleClick = () => {
+    if (variant === "primary") {
+      playSound("/sounds/start.mp3", 0.5);
+    } else {
+      playSound("/sounds/cancel.mp3", 0.5);
+    }
+    onClick();
+  };
+
   return (
     <button
-      onClick={onClick}
+      onClick={handleClick}
       disabled={disabled}
       className={`group relative w-full py-4 font-mono uppercase tracking-[0.35em] text-xs
         bg-black border rounded-md overflow-hidden

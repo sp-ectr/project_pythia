@@ -3,7 +3,7 @@ import WebApp from "@twa-dev/sdk";
 import backImg from "../assets/back.webp";
 import { useDecrypt } from "../hooks/useDecrypt";
 import { GlitchCard } from "../components/core/GlitchCard";
-import { playSound } from "../utils/sound";
+import { playSound, stopAll, toggleMute } from "../utils/sound";
 import { GreetingScene } from "../scenes/GreetingScene";
 import { Cursor } from "../components/ui/Cursor";
 import { WarningScene } from "../scenes/WarningScene";
@@ -100,6 +100,7 @@ export function HomeScreen() {
   const [readingResult, setReadingResult] = useState<OracleResponse | null>(
     null,
   );
+  const [mutedState, setMutedState] = useState(false);
 
   const userId = "471019051";
   const neuroTokens = 1;
@@ -173,6 +174,8 @@ export function HomeScreen() {
   }, [scene]);
 
   const handleInitSession = () => {
+    stopAll();
+    playSound("/sounds/start.mp3", 0.5);
     scrollToTop();
     setIsReading(true);
 
@@ -248,7 +251,7 @@ export function HomeScreen() {
       si++;
       setSubtitleText(subtitleFull.slice(0, si));
       if (subtitleFull[si - 1] !== " " && subtitleFull[si - 1] !== "]") {
-        playSound("/sounds/typing-click.mp3", 0.5);
+        playSound("/sounds/Blip7.wav", 0.5);
       }
       if (si < subtitleFull.length) {
         subtitleTimeout = setTimeout(typeSubtitle, 80);
@@ -277,7 +280,7 @@ export function HomeScreen() {
         return;
       }
       if (currentChar !== " ") {
-        playSound("/sounds/typing-click.mp3", 0.5);
+        playSound("/sounds/Blip7.wav", 0.5);
       }
       setHomePaused(false);
       homeTimeout = setTimeout(typeHomeText, 45);
@@ -297,6 +300,15 @@ export function HomeScreen() {
         className="flex flex-col relative overflow-hidden border border-slate-800 shadow-[0_0_60px_rgba(0,0,0,0.9)] bg-black"
         style={{ width: "390px", height: "844px" }}
       >
+        <button
+          onClick={() => {
+            const nowMuted = toggleMute(0.2);
+            setMutedState(nowMuted);
+          }}
+          className="absolute bottom-3 right-3 z-[60] w-9 h-9 flex items-center justify-center rounded-full border border-cyan-500/30 bg-black/80 text-cyan-400 text-sm font-mono hover:border-cyan-400/60 transition-colors"
+        >
+          {mutedState ? "🔇" : "🔊"}
+        </button>
         {/* SCANLINES */}
         <div className="absolute inset-0 pointer-events-none z-50 opacity-10 bg-[linear-gradient(rgba(18,16,16,0)_50%,rgba(0,0,0,0.25)_50%),linear-gradient(90deg,rgba(255,0,0,0.06),rgba(0,255,0,0.02),rgba(0,0,255,0.06))] bg-[size:100%_4px,3px_100%]" />
 
@@ -456,7 +468,10 @@ export function HomeScreen() {
                 >
                   <div className="text-xs mb-2">{tokensLabel}</div>
                   <button
-                    onClick={() => switchScene("tokens")}
+                    onClick={() => {
+                      playSound("/sounds/start.mp3", 0.5);
+                      switchScene("tokens");
+                    }}
                     className={`transition-colors duration-300 underline decoration-dotted underline-offset-4 text-xs self-start ${
                       neuroTokens <= 0
                         ? "text-rose-400 hover:text-rose-300"

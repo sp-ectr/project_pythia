@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { playSound } from "../utils/sound";
 const CHARS =
   "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()_+-=[]{}|;:,.<>?";
 
@@ -11,6 +12,7 @@ export function useDecrypt(text: string, trigger: boolean, duration = 1000) {
       setDisplayed("");
       return;
     }
+    playSound("/sounds/decript.mp3", 0.4);
     let iteration = 0;
     const totalSteps = 18;
     const intervalMs = duration / totalSteps;

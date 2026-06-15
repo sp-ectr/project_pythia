@@ -41,7 +41,7 @@ export function BootScreen({ onComplete }: BootScreenProps) {
       }
 
       if (currentChar !== " ") {
-        playSound("/sounds/typing-click.mp3", 0.5);
+        playSound("/sounds/Blip7.wav", 0.5);
       }
 
       setBootPaused(false);
