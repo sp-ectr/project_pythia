@@ -251,7 +251,7 @@ export function HomeScreen() {
       si++;
       setSubtitleText(subtitleFull.slice(0, si));
       if (subtitleFull[si - 1] !== " " && subtitleFull[si - 1] !== "]") {
-        playSound("/sounds/Blip7.wav", 0.5);
+        playSound("/sounds/blip.mp3", 0.5);
       }
       if (si < subtitleFull.length) {
         subtitleTimeout = setTimeout(typeSubtitle, 80);
@@ -280,7 +280,7 @@ export function HomeScreen() {
         return;
       }
       if (currentChar !== " ") {
-        playSound("/sounds/Blip7.wav", 0.5);
+        playSound("/sounds/blip.mp3", 0.5);
       }
       setHomePaused(false);
       homeTimeout = setTimeout(typeHomeText, 45);
@@ -302,7 +302,7 @@ export function HomeScreen() {
       >
         <button
           onClick={() => {
-            const nowMuted = toggleMute(0.2);
+            const nowMuted = toggleMute(0.15);
             setMutedState(nowMuted);
           }}
           className="absolute bottom-3 right-3 z-[60] w-9 h-9 flex items-center justify-center rounded-full border border-cyan-500/30 bg-black/80 text-cyan-400 text-sm font-mono hover:border-cyan-400/60 transition-colors"

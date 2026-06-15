@@ -22,7 +22,7 @@ export default function App() {
       <div
         onClick={() => {
           setScreen("BOOT");
-          startBgMusic("/sounds/fon.mp3", 0.2);
+          startBgMusic("/sounds/fon.mp3", 0.15);
         }}
         className="min-h-screen bg-black text-cyan-400 flex flex-col items-center justify-center font-mono cursor-pointer select-none"
       >
