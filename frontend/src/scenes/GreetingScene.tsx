@@ -39,7 +39,7 @@ export function GreetingScene({
       if (i < fullGreeting.length) {
         setOracleGreeting(fullGreeting.slice(0, i + 1));
         if (fullGreeting[i] !== " " && fullGreeting[i] !== "\n") {
-          playSound("/sounds/blip.mp3", 0.5);
+          playSound("/sounds/blip.mp3", 0.2);
         }
         i++;
         timer = setTimeout(type, 40);

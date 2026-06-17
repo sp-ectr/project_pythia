@@ -49,7 +49,7 @@ export function InputScene({
       if (i < fullIntro.length) {
         setInputIntroText(fullIntro.slice(0, i + 1));
         if (fullIntro[i] !== " " && fullIntro[i] !== "\n") {
-          playSound("/sounds/blip.mp3", 0.5);
+          playSound("/sounds/blip.mp3", 0.2);
         }
         i++;
         timer = setTimeout(type, 45);

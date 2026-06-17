@@ -41,7 +41,7 @@ export function BootScreen({ onComplete }: BootScreenProps) {
       }
 
       if (currentChar !== " ") {
-        playSound("/sounds/blip.mp3", 0.5);
+        playSound("/sounds/blip.mp3", 0.2);
       }
 
       setBootPaused(false);

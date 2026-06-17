@@ -251,7 +251,7 @@ export function HomeScreen() {
       si++;
       setSubtitleText(subtitleFull.slice(0, si));
       if (subtitleFull[si - 1] !== " " && subtitleFull[si - 1] !== "]") {
-        playSound("/sounds/blip.mp3", 0.5);
+        playSound("/sounds/blip.mp3", 0.2);
       }
       if (si < subtitleFull.length) {
         subtitleTimeout = setTimeout(typeSubtitle, 80);
@@ -280,7 +280,7 @@ export function HomeScreen() {
         return;
       }
       if (currentChar !== " ") {
-        playSound("/sounds/blip.mp3", 0.5);
+        playSound("/sounds/blip.mp3", 0.2);
       }
       setHomePaused(false);
       homeTimeout = setTimeout(typeHomeText, 45);
@@ -305,9 +305,14 @@ export function HomeScreen() {
             const nowMuted = toggleMute(0.15);
             setMutedState(nowMuted);
           }}
-          className="absolute bottom-3 right-3 z-[60] w-9 h-9 flex items-center justify-center rounded-full border border-cyan-500/30 bg-black/80 text-cyan-400 text-sm font-mono hover:border-cyan-400/60 transition-colors"
+          className="absolute bottom-3 right-3 z-[60] flex flex-col items-center gap-1"
         >
-          {mutedState ? "🔇" : "🔊"}
+          <span className="w-9 h-9 flex items-center justify-center rounded-full border border-cyan-500/30 bg-black/80 text-cyan-400 text-sm font-mono hover:border-cyan-400/60 transition-colors">
+            {mutedState ? "🔇" : "🔊"}
+          </span>
+          <span className="text-[8px] text-cyan-400/40 font-mono tracking-wider">
+            {mutedState ? "// OFF" : "// AMBIENT"}
+          </span>
         </button>
         {/* SCANLINES */}
         <div className="absolute inset-0 pointer-events-none z-50 opacity-10 bg-[linear-gradient(rgba(18,16,16,0)_50%,rgba(0,0,0,0.25)_50%),linear-gradient(90deg,rgba(255,0,0,0.06),rgba(0,255,0,0.02),rgba(0,0,255,0.06))] bg-[size:100%_4px,3px_100%]" />
@@ -580,90 +585,90 @@ export function HomeScreen() {
                         {
                           position: 1,
                           position_meaning: "Past",
-                          card_id: 13, // Death
-                          card_name: "Смерть",
+                          card_id: 13,
+                          card_name: "Lorem I",
                           is_reversed: true,
-                          text: "Ты застрял в коконе прошлого, боясь отпустить старые методы. Перемены стучатся в двери, но ты держишь их на засове, питая застой своей нерешительностью.Ты застрял в коконе прошлого, боясь отпустить старые методы. Перемены стучатся в двери, но ты держишь их на засове, питая застой своей нерешительностью.Ты застрял в коконе прошлого, боясь отпустить старые методы. Перемены стучатся в двери, но ты держишь их на засове, питая застой своей нерешительностью.Ты застрял в коконе прошлого, боясь отпустить старые методы. Перемены стучатся в двери, но ты держишь их на засове, питая застой своей нерешительностью.Ты застрял в коконе прошлого, боясь отпустить старые методы. Перемены стучатся в двери, но ты держишь их на засове, питая застой своей нерешительностью.Ты застрял в коконе прошлого, боясь отпустить старые методы. Перемены стучатся в двери, но ты держишь их на засове, питая застой своей нерешительностью.Ты застрял в коконе прошлого, боясь отпустить старые методы. Перемены стучатся в двери, но ты держишь их на засове, питая застой своей нерешительностью.Ты застрял в коконе прошлого, боясь отпустить старые методы. Перемены стучатся в двери, но ты держишь их на засове, питая застой своей нерешительностью.Ты застрял в коконе прошлого, боясь отпустить старые методы. Перемены стучатся в двери, но ты держишь их на засове, питая застой своей нерешительностью.Ты застрял в коконе прошлого, боясь отпустить старые методы. Перемены стучатся в двери, но ты держишь их на засове, питая застой своей нерешительностью.Ты застрял в коконе прошлого, боясь отпустить старые методы. Перемены стучатся в двери, но ты держишь их на засове, питая застой своей нерешительностью.Ты застрял в коконе прошлого, боясь отпустить старые методы. Перемены стучатся в двери, но ты держишь их на засове, питая застой своей нерешительностью.Ты застрял в коконе прошлого, боясь отпустить старые методы. Перемены стучатся в двери, но ты держишь их на засове, питая застой своей нерешительностью.Ты застрял в коконе прошлого, боясь отпустить старые методы. Перемены стучатся в двери, но ты держишь их на засове, питая застой своей нерешительностью.",
+                          text: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.",
                         },
                         {
                           position: 2,
                           position_meaning: "Present",
-                          card_id: 50, // Nine of Pentacles
-                          card_name: "Девятка Пентаклей",
+                          card_id: 50,
+                          card_name: "Lorem II",
                           is_reversed: false,
-                          text: "Твоя жажда независимости и комфорта становится клеткой. Ты ищешь внешнего признания, забывая, что истинное мастерство рождается в дисциплине, а не в ожидании плодов.",
+                          text: "Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore veritatis et quasi architecto beatae vitae dicta sunt explicabo. Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit.",
                         },
                         {
                           position: 3,
                           position_meaning: "Future",
-                          card_id: 1, // Magician
-                          card_name: "Маг",
+                          card_id: 1,
+                          card_name: "Lorem III",
                           is_reversed: true,
-                          text: "В основе лежат нереализованные амбиции и попытки срезать путь. Ты пытался играть с судьбой, вместо того чтобы ковать свои инструменты с честностью.",
+                          text: "At vero eos et accusamus et iusto odio dignissimos ducimus qui blanditiis praesentium voluptatum deleniti atque corrupti quos dolores et quas molestias excepturi sint occaecati cupiditate non provident, similique sunt in culpa qui officia deserunt mollitia animi.",
                         },
                         {
                           position: 4,
                           position_meaning: "Challenge",
-                          card_id: 6, // Lovers
-                          card_name: "Влюбленные",
+                          card_id: 6,
+                          card_name: "Lorem IV",
                           is_reversed: false,
-                          text: "Недавний выбор, сделанный тобой, был окрашен стремлением к гармонии, но, возможно, ты выбрал путь наименьшего сопротивления, а не путь истинного призвания.",
+                          text: "Nam libero tempore, cum soluta nobis est eligendi optio cumque nihil impedit quo minus id quod maxime placeat facere possimus, omnis voluptas assumenda est, omnis dolor repellendus. Temporibus autem quibusdam et aut officiis debitis aut rerum necessitatibus saepe eveniet.",
                         },
                         {
                           position: 5,
                           position_meaning: "Guidance",
-                          card_id: 9, // Hermit
-                          card_name: "Отшельник",
+                          card_id: 9,
+                          card_name: "Lorem V",
                           is_reversed: false,
-                          text: "Ты стремишься к глубокому пониманию своего ремесла. Это благородная цель, требующая уединения и отказа от суеты ради накопления внутренней мудрости.",
+                          text: "Et harum quidem rerum facilis est et expedita distinctio. Nam libero tempore, cum soluta nobis est eligendi optio cumque nihil impedit quo minus id quod maxime placeat facere possimus, omnis voluptas assumenda est.",
                         },
                         {
                           position: 6,
                           position_meaning: "Surroundings",
-                          card_id: 52, // Queen of Pentacles
-                          card_name: "Королева Пентаклей",
+                          card_id: 52,
+                          card_name: "Lorem VI",
                           is_reversed: false,
-                          text: "Земная удача близка. Практические шаги и забота о материальной базе принесут свои плоды, если ты применишь упорство вместо грез.",
+                          text: "Temporibus autem quibusdam et aut officiis debitis aut rerum necessitatibus saepe eveniet ut et voluptates repudiandae sint et molestiae non recusandae. Itaque earum rerum hic tenetur a sapiente delectus.",
                         },
                         {
                           position: 7,
                           position_meaning: "Action",
-                          card_id: 42, // Seven of Cups
-                          card_name: "Семерка Кубков",
+                          card_id: 42,
+                          card_name: "Lorem VII",
                           is_reversed: false,
-                          text: "Твой разум затуманен призраками множества дорог. Ты видишь тени оферов, но не можешь различить, где истина, а где лишь игра твоего воображения.",
+                          text: "Ut aut reiciendis voluptatibus maiores alias consequatur aut perferendis doloribus asperiores repellat. Quis autem vel eum iure reprehenderit qui in ea voluptate velit esse quam nihil molestiae consequatur.",
                         },
                         {
                           position: 8,
                           position_meaning: "Obstacle",
-                          card_id: 49, // Page of Pentacles
-                          card_name: "Паж Пентаклей",
+                          card_id: 49,
+                          card_name: "Lorem VIII",
                           is_reversed: true,
-                          text: "Внешний мир вокруг тебя полон прокрастинации. Потенциальные возможности тратятся впустую, и среда не способствует твоему стремительному росту.",
+                          text: "Vel illum qui dolorem eum fugiat quo voluptas nulla pariatur. At vero eos et accusamus et iusto odio dignissimos ducimus qui blanditiis praesentium voluptatum deleniti atque corrupti.",
                         },
                         {
                           position: 9,
                           position_meaning: "Strength",
-                          card_id: 44, // Nine of Cups
-                          card_name: "Девятка Кубков",
+                          card_id: 44,
+                          card_name: "Lorem IX",
                           is_reversed: true,
-                          text: "Ты боишься, что, достигнув желаемого, обнаружишь пустоту. Твои ожидания от карьеры могут оказаться лишь декорациями, скрывающими отсутствие счастья.",
+                          text: "Quos dolores et quas molestias excepturi sint occaecati cupiditate non provident, similique sunt in culpa qui officia deserunt mollitia animi, id est laborum et dolorum fuga.",
                         },
                         {
                           position: 10,
                           position_meaning: "Outcome",
-                          card_id: 25, // Five of Wands
-                          card_name: "Пятерка Жезлов",
+                          card_id: 25,
+                          card_name: "Lorem X",
                           is_reversed: false,
-                          text: "Путь к оферу лежит через хаос и борьбу. Тебе придется доказывать свое право на место в строю, сражаясь с конкурентами и собственным беспокойством.",
+                          text: "Nam libero tempore, cum soluta nobis est eligendi optio cumque nihil impedit quo minus id quod maxime placeat facere possimus, omnis voluptas assumenda est, omnis dolor repellendus.",
                         },
                       ];
                       const mockResult: OracleResponse = {
                         is_safe: true,
                         intro:
-                          "Душа, ищущая опоры в потоках кода и золота, ты пришла к порогу, где зеркала отражают не то, что ты желаешь видеть, а то, что ты боишься признать.",
+                          "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris.",
                         conclusion:
-                          "Офер придет не как подарок, а как трофей, добытый в схватке. Перестань грезить о легком пути — сбрось оковы сомнений, отточи свой разум в тишине и приготовься к битве за свое место под солнцем. Истинное мастерство не просят, его отвоевывают. Истинное мастерство не просят, его отвоевывают.",
+                          "At vero eos et accusamus et iusto odio dignissimos ducimus qui blanditiis praesentium voluptatum deleniti atque corrupti quos dolores et quas molestias excepturi sint occaecati cupiditate non provident. Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium.",
                         card_interpretations: mockCards,
                       };
                       setReadingResult(mockResult);
