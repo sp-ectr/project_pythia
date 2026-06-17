@@ -89,6 +89,7 @@ export function HomeScreen() {
   const audioChunksRef = useRef<Blob[]>([]);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const recordingTimerRef = useRef<ReturnType<typeof setTimeout>>(null);
+  const typingActiveRef = useRef(true);
 
   const [currentCardId, setCurrentCardId] = useState(0);
   const [apiDone, setApiDone] = useState(false);
@@ -175,6 +176,9 @@ export function HomeScreen() {
   }, [scene]);
 
   const handleInitSession = () => {
+    typingActiveRef.current = false;
+    typingTimersRef.current.forEach(clearTimeout);
+    typingTimersRef.current = [];
     stopAll();
     playSound("/sounds/start.mp3", 0.5);
     scrollToTop();
@@ -182,14 +186,15 @@ export function HomeScreen() {
 
     if (neuroTokens <= 0) {
       setScene("tokens");
-    } else {
-      setScene("greeting");
-    }
-
-    setTimeout(() => {
       setTerminalVisible(true);
       setSceneVisible(true);
-    }, 1300);
+    } else {
+      setScene("greeting");
+      setTimeout(() => {
+        setTerminalVisible(true);
+        setSceneVisible(true);
+      }, 1300);
+    }
   };
 
   useEffect(() => {
@@ -197,6 +202,13 @@ export function HomeScreen() {
       setTimeout(() => textareaRef.current?.focus(), 100);
     }
   }, [inputMode]);
+
+  useEffect(() => {
+    if (!isReading) {
+      typingActiveRef.current = true;
+      typingTimersRef.current = [];
+    }
+  }, [isReading]);
 
   const handleVoice = async () => {
     setRecordingError("");
@@ -243,12 +255,17 @@ export function HomeScreen() {
     mediaRecorderRef.current?.stop();
   };
 
+  const typingTimersRef = useRef<ReturnType<typeof setTimeout>[]>([]);
+
   useEffect(() => {
+    const timers = typingTimersRef.current;
     const pythiaTimer = setTimeout(() => setPythiaVisible(true), 300);
+    timers.push(pythiaTimer);
     const subtitleFull = "[ ЦИФРОВОЙ_ТАРО_БОТ ]";
     let si = 0;
     let subtitleTimeout: ReturnType<typeof setTimeout>;
     const typeSubtitle = () => {
+      if (!typingActiveRef.current) return;
       si++;
       setSubtitleText(subtitleFull.slice(0, si));
       if (subtitleFull[si - 1] !== " " && subtitleFull[si - 1] !== "]") {
@@ -256,15 +273,19 @@ export function HomeScreen() {
       }
       if (si < subtitleFull.length) {
         subtitleTimeout = setTimeout(typeSubtitle, 80);
+        timers.push(subtitleTimeout);
       } else {
-        setTimeout(typeHomeText, 600);
+        const t = setTimeout(typeHomeText, 600);
+        timers.push(t);
       }
     };
     const subtitleStartTimer = setTimeout(typeSubtitle, 1400);
+    timers.push(subtitleStartTimer);
     const homeFullText = `СОСТОЯНИЕ_ОРАКУЛА: АКТИВЕН\nСИНХРОНИЗАЦИЯ_МАТРИЦЫ: УСТАНОВЛЕНА\nОЖИДАНИЕ_ВВОДА...`;
     let hi = 0;
     let homeTimeout: ReturnType<typeof setTimeout>;
     const typeHomeText = () => {
+      if (!typingActiveRef.current) return;
       const currentChar = homeFullText[hi];
       hi++;
       setHomeText(homeFullText.slice(0, hi));
@@ -278,6 +299,7 @@ export function HomeScreen() {
           setHomePaused(false);
           typeHomeText();
         }, 500);
+        timers.push(homeTimeout);
         return;
       }
       if (currentChar !== " ") {
@@ -285,12 +307,10 @@ export function HomeScreen() {
       }
       setHomePaused(false);
       homeTimeout = setTimeout(typeHomeText, 70);
+      timers.push(homeTimeout);
     };
     return () => {
-      clearTimeout(pythiaTimer);
-      clearTimeout(subtitleStartTimer);
-      clearTimeout(subtitleTimeout);
-      clearTimeout(homeTimeout);
+      timers.forEach(clearTimeout);
     };
   }, []);
 
