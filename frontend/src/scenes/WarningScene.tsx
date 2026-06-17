@@ -59,7 +59,7 @@ export function WarningScene({
               }}
               className="text-rose-400/90 hover:text-rose-300 underline decoration-dotted underline-offset-4 text-sm"
             >
-              [ TERMINAL_RULES ]
+              [ ПРАВИЛА_ТЕРМИНАЛА ]
             </button>
           )}
         </div>
@@ -68,10 +68,10 @@ export function WarningScene({
       {warningDone && (
         <div className="flex flex-col gap-3">
           <TerminalButton variant="primary" onClick={onConfirm}>
-            [ confirm ]
+            [ подтвердить ]
           </TerminalButton>
           <TerminalButton variant="cancel" onClick={onCancel}>
-            [ cancel ]
+            [ отмена ]
           </TerminalButton>
         </div>
       )}

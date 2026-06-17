@@ -11,11 +11,11 @@ export function BootScreen({ onComplete }: BootScreenProps) {
   const [bootPaused, setBootPaused] = useState(false);
 
   useEffect(() => {
-    const fullText = `> CONNECTING TO NEURAL NETWORK..
-> BYPASSING SECURITY PROTOCOLS..
-> CALIBRATING ORACLE ENGINE V0.1
+    const fullText = `> ПОДКЛЮЧЕНИЕ К НЕЙРОСЕТИ..
+> ОБХОД ПРОТОКОЛОВ БЕЗОПАСНОСТИ..
+> КАЛИБРОВКА МОДУЛЯ ORACLE V0.1
 
-> SYSTEM READY.`;
+> СИСТЕМА ГОТОВА.`;
 
     let index = 0;
     let timeout: ReturnType<typeof setTimeout>;
@@ -41,7 +41,7 @@ export function BootScreen({ onComplete }: BootScreenProps) {
       }
 
       if (currentChar !== " ") {
-        playSound("/sounds/blip.mp3", 0.2);
+        playSound("/sounds/blip.mp3", 0.1);
       }
 
       setBootPaused(false);

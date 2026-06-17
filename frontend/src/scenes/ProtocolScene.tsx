@@ -56,7 +56,7 @@ export function ProtocolScene({ isVisible, onBack }: ProtocolSceneProps) {
   return (
     <div>
       <div className="text-sm text-cyan-400/60 tracking-widest mb-3 uppercase">
-        SECURITY_PROTOCOL // DOCUMENT
+        ПРОТОКОЛ // ДОКУМЕНТ
       </div>
 
       <div className="leading-relaxed text-slate-300 mb-5 border-l-2 border-cyan-400/40 pl-4 text-[13px] whitespace-pre-wrap max-h-[520px] overflow-y-auto pr-2 font-mono">
@@ -64,7 +64,7 @@ export function ProtocolScene({ isVisible, onBack }: ProtocolSceneProps) {
       </div>
 
       <TerminalButton variant="cancel" onClick={onBack}>
-        [ back ]
+        [ назад ]
       </TerminalButton>
     </div>
   );

@@ -3,6 +3,7 @@ import { TerminalButton } from "../components/ui/TerminalButton";
 import { Cursor } from "../components/ui/Cursor";
 import { useDecrypt } from "../hooks/useDecrypt";
 import { CardReveal } from "../components/ui/CardReveal";
+import { playSound } from "../utils/sound";
 import backImg from "../assets/back.webp";
 
 const POSITION_TITLES: Record<number, string> = {
@@ -166,20 +167,26 @@ export function ResultScene({
     const titleTimer = setInterval(() => {
       if (titleIdx < activeTitle.length) {
         setDisplayedTitle(activeTitle.slice(0, titleIdx + 1));
+        if (activeTitle[titleIdx] !== " ") {
+          playSound("/sounds/blip.mp3", 0.1);
+        }
         titleIdx++;
       } else {
         clearInterval(titleTimer);
         const textTimer = setInterval(() => {
           if (textIdx < activeText.length) {
             setDisplayedText(activeText.slice(0, textIdx + 1));
+            if (activeText[textIdx] !== " " && activeText[textIdx] !== "\n") {
+              playSound("/sounds/blip.mp3", 0.1);
+            }
             textIdx++;
           } else {
             clearInterval(textTimer);
             setTypingDone(true);
           }
-        }, 28);
+        }, 50);
       }
-    }, 42);
+    }, 60);
 
     return () => clearInterval(titleTimer);
   }, [currentIndex, isVisible, step, card?.position, intro, conclusion]);
@@ -288,20 +295,20 @@ export function ResultScene({
 
       <div className={`flex gap-3 w-full ${isPureText ? "mt-6" : "mt-auto"}`}>
         {step !== "oracle_intro" && (
-          <TerminalButton variant="cancel" onClick={handlePrev}>
-            [ prev ]
+          <TerminalButton variant="cancel" onClick={handlePrev} disabled={!typingDone}>
+            [ назад ]
           </TerminalButton>
         )}
-        <TerminalButton variant="primary" onClick={handleNext}>
+        <TerminalButton variant="primary" onClick={handleNext} disabled={!typingDone}>
           {step === "oracle_intro"
-            ? "[ unveil spread ]"
+            ? "[ раскрыть расклад ]"
             : step === "card_intro"
-              ? "[ decode ]"
+              ? "[ декодировать ]"
               : step === "card_reading" && currentIndex === cards.length - 1
-                ? "[ show conclusion ]"
+                ? "[ показать итог ]"
                 : step === "oracle_conclusion"
-                  ? onShowFeedback ? "[ rate session ]" : "[ finish ]"
-                  : "[ next ]"}
+                  ? onShowFeedback ? "[ оценить сеанс ]" : "[ завершить ]"
+                  : "[ далее ]"}
         </TerminalButton>
       </div>
     </div>

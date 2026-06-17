@@ -22,15 +22,18 @@ export default function App() {
       <div
         onClick={() => {
           setScreen("BOOT");
-          startBgMusic("/sounds/fon.mp3", 0.15);
+          startBgMusic("/sounds/fon.mp3", 0.1);
         }}
         className="min-h-screen bg-black text-cyan-400 flex flex-col items-center justify-center font-mono cursor-pointer select-none"
       >
-        <div className="text-4xl font-black tracking-[0.3em] mb-6 animate-pulse">
+        <div className="text-4xl font-black tracking-[0.3em] mb-2 animate-pulse">
           PYTHIA
         </div>
+        <div className="text-[10px] text-cyan-400/40 tracking-[0.5em] uppercase mb-6">
+          beta
+        </div>
         <div className="text-xs text-cyan-400/60 tracking-[0.4em] uppercase animate-pulse">
-          [ tap to initialize ]
+          [ коснись, чтобы начать ]
         </div>
       </div>
     );

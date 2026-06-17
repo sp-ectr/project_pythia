@@ -39,10 +39,10 @@ export function GreetingScene({
       if (i < fullGreeting.length) {
         setOracleGreeting(fullGreeting.slice(0, i + 1));
         if (fullGreeting[i] !== " " && fullGreeting[i] !== "\n") {
-          playSound("/sounds/blip.mp3", 0.2);
+          playSound("/sounds/blip.mp3", 0.1);
         }
         i++;
-        timer = setTimeout(type, 40);
+        timer = setTimeout(type, 65);
       } else {
         setGreetingDone(true);
       }
@@ -65,11 +65,11 @@ export function GreetingScene({
       <>
         <div className="flex flex-col gap-3">
           <TerminalButton variant="primary" onClick={onStart}>
-            [ start ]
+            [ начать ]
           </TerminalButton>
 
           <TerminalButton variant="cancel" onClick={onCancel}>
-            [ cancel ]
+            [ отмена ]
           </TerminalButton>
 
           <button
@@ -79,7 +79,7 @@ export function GreetingScene({
             }}
             className="text-center text-cyan-300/70 hover:text-cyan-300 transition-colors text-[11px]"
           >
-            [ by starting you accept the system protocol ]
+            [ нажимая, вы принимаете протокол ]
           </button>
         </div>
       </>

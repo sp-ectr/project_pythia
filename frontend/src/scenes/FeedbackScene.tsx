@@ -86,13 +86,13 @@ export function FeedbackScene({
     return (
       <div className="text-center">
         <div className="text-sm text-cyan-400/60 tracking-widest mb-3 uppercase">
-          FEEDBACK // TRANSMITTED
+          ОТЗЫВ // ОТПРАВЛЕН
         </div>
         <div className="text-slate-300 text-[14px] mb-6">
           Спасибо, твой голос записан в потоке данных.
         </div>
         <TerminalButton variant="primary" onClick={onSkip}>
-          [ finish ]
+          [ завершить ]
         </TerminalButton>
       </div>
     );
@@ -101,7 +101,7 @@ export function FeedbackScene({
   return (
     <div>
       <div className="text-sm text-cyan-400/60 tracking-widest mb-3 uppercase">
-        FEEDBACK // RATE SESSION
+        ОЦЕНИ СЕАНС
       </div>
 
       <div className="text-slate-300 text-[13px] mb-5 border-l-2 border-cyan-400/40 pl-4">
@@ -110,14 +110,14 @@ export function FeedbackScene({
 
       <div className="mb-4">
         <div className="text-[11px] text-slate-500 tracking-widest mb-2">
-          RATING:
+          ОЦЕНКА:
         </div>
         <StarRating rating={rating} onRate={setRating} />
       </div>
 
       <div className="mb-5">
         <div className="text-[11px] text-slate-500 tracking-widest mb-2">
-          COMMENT // OPTIONAL:
+          КОММЕНТАРИЙ // НЕОБЯЗАТЕЛЬНО:
         </div>
         <textarea
           value={text}
@@ -138,17 +138,17 @@ export function FeedbackScene({
           onClick={handleSubmit}
           disabled={rating === 0}
         >
-          [ submit ]
+          [ отправить ]
         </TerminalButton>
         <TerminalButton variant="cancel" onClick={onSkip}>
-          [ skip ]
+          [ пропустить ]
         </TerminalButton>
       </div>
 
       {MOCK_REVIEWS.length > 0 && (
         <div>
           <div className="text-[11px] text-slate-500 tracking-widest mb-3 border-t border-cyan-500/10 pt-4">
-            // RECENT_FEEDBACK
+            // ПОСЛЕДНИЕ ОТЗЫВЫ
           </div>
           <div className="flex flex-col gap-3">
             {MOCK_REVIEWS.map((r) => (

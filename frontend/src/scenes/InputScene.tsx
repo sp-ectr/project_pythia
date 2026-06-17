@@ -49,10 +49,10 @@ export function InputScene({
       if (i < fullIntro.length) {
         setInputIntroText(fullIntro.slice(0, i + 1));
         if (fullIntro[i] !== " " && fullIntro[i] !== "\n") {
-          playSound("/sounds/blip.mp3", 0.2);
+          playSound("/sounds/blip.mp3", 0.1);
         }
         i++;
-        timer = setTimeout(type, 45);
+        timer = setTimeout(type, 65);
       } else {
         setInputIntroDone(true);
       }
@@ -180,7 +180,7 @@ export function InputScene({
                       : "border-slate-700/40 text-slate-600 cursor-not-allowed"
                   }`}
                 >
-                  [ ask ]
+                  [ спросить ]
                 </button>
                 <button
                   onClick={() => {
@@ -190,7 +190,7 @@ export function InputScene({
                   }}
                   className="flex-1 py-4 font-mono uppercase tracking-[0.35em] text-xs border border-slate-600/50 text-slate-500 rounded-md transition-all duration-300 active:scale-[0.97]"
                 >
-                  [ cancel ]
+                  [ отмена ]
                 </button>
               </div>
             </div>

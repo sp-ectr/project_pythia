@@ -36,7 +36,7 @@ export function RulesScene({ isVisible, onAcknowledge }: RulesSceneProps) {
   return (
     <div>
       <div className="text-sm text-rose-400/60 tracking-widest mb-4 uppercase">
-        SECURITY_PROTOCOL // RULES
+        ПРОТОКОЛ_БЕЗОПАСНОСТИ // ПРАВИЛА
       </div>
       <div className="leading-relaxed text-slate-300 mb-6 border-l-2 border-rose-500/40 pl-4 text-[14px] space-y-3">
         <p>{p1}</p>
@@ -59,7 +59,7 @@ export function RulesScene({ isVisible, onAcknowledge }: RulesSceneProps) {
       </div>
       <div className="flex flex-col gap-3">
         <TerminalButton variant="primary" onClick={onAcknowledge}>
-          [ acknowledge ]
+          [ понятно ]
         </TerminalButton>
       </div>
     </div>

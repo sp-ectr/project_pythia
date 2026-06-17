@@ -13,7 +13,7 @@ export function TerminalButton({
 }) {
   const colors = {
     primary:
-      "border-cyan-400/50 text-cyan-300 shadow-[0_0_12px_rgba(34,211,238,0.2)]",
+      "border-cyan-400/60 text-cyan-200 shadow-[0_0_15px_rgba(34,211,238,0.25),0_0_30px_rgba(34,211,238,0.1)] animate-glow",
     cancel: "border-slate-600/50 text-slate-500 shadow-none",
     danger:
       "border-rose-500/40 text-rose-400 shadow-[0_0_12px_rgba(244,63,94,0.15)]",

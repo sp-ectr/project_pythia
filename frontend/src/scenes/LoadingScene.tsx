@@ -52,7 +52,7 @@ export function LoadingScene({
             apiDone ? "text-emerald-400" : "text-slate-600"
           }`}
         >
-          {apiDone ? "ORACLE_RESPONSE: RECEIVED" : "ORACLE_RESPONSE: PENDING"}
+          {apiDone ? "ОТВЕТ_ОРАКУЛА: ПОЛУЧЕН" : "ОТВЕТ_ОРАКУЛА: ОЖИДАНИЕ"}
         </span>
       </div>
       <div className="flex flex-col gap-3 w-full">
@@ -61,7 +61,7 @@ export function LoadingScene({
           disabled={!canProceed}
           onClick={onComplete}
         >
-          {canProceed ? "[ next ]" : "[ next // ожидание ]"}
+          {canProceed ? "[ далее ]" : "[ далее // ожидание ]"}
         </TerminalButton>
       </div>
     </div>

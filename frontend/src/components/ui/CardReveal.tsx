@@ -26,7 +26,7 @@ export function CardReveal({
 
     img.onload = () => {
       if (!active) return;
-      playSound("/sounds/cardreveal.mp3", 0.8);
+      playSound("/sounds/cardreveal.mp3", 0.5);
 
       const canvas = canvasRef.current;
       if (!canvas) return;

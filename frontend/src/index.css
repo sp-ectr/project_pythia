@@ -12,6 +12,7 @@
   --animate-shuffleRight: shuffleRight 3s ease-in-out infinite 1.5s;
   --animate-glitch: glitch 0.2s steps(2);
   --animate-cursorBlink: cursorBlink 1s steps(1) infinite;
+  --animate-glow: glow 2s ease-in-out infinite;
 }
 
 @keyframes pythiaShimmer {
@@ -89,6 +90,16 @@
   }
   50% {
     opacity: 0;
+  }
+}
+
+@keyframes glow {
+  0%,
+  100% {
+    box-shadow: 0 0 15px rgba(34, 211, 238, 0.25), 0 0 30px rgba(34, 211, 238, 0.1);
+  }
+  50% {
+    box-shadow: 0 0 20px rgba(34, 211, 238, 0.4), 0 0 40px rgba(34, 211, 238, 0.2), 0 0 60px rgba(34, 211, 238, 0.1);
   }
 }
 

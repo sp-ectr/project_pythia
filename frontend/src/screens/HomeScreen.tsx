@@ -106,17 +106,17 @@ export function HomeScreen() {
   const neuroTokens = 1;
 
   const statusLine1 = useDecrypt(
-    `NODE_ID: ${userId} // AUTH_LEVEL: GUEST`,
+    `ID_УЗЛА: ${userId} // ДОСТУП: ГОСТЬ`,
     terminalVisible,
     1000,
   );
   const statusLine2 = useDecrypt(
-    "STATUS: ENCRYPTED_CONNECTION",
+    "СТАТУС: ЗАШИФРОВАН",
     terminalVisible,
     1000,
   );
   const tokensLabel = useDecrypt(
-    `AVAILABLE: ${neuroTokens} TAROT_TOKEN`,
+    `БАЛАНС: ${neuroTokens} ТОКЕН`,
     terminalVisible,
     1000,
   );
@@ -148,10 +148,10 @@ export function HomeScreen() {
     setTimeout(() => setMinTimeDone(true), MIN_LOADING_MS);
 
     const statuses = [
-      "SCANNING_MATRIX",
-      "ALIGNING_VECTORS",
-      "READING_ENTROPY",
-      "CONSULTING_ORACLE",
+      "СКАНИРОВАНИЕ_МАТРИЦЫ",
+      "ВЫРАВНИВАНИЕ_ВЕКТОРОВ",
+      "ЧТЕНИЕ_ЭНТРОПИИ",
+      "КОНСУЛЬТАЦИЯ_С_ОРАКУЛОМ",
     ];
     statuses.forEach((s, i) => {
       setTimeout(() => setLoadingStatus(s), i * 1000);
@@ -167,6 +167,7 @@ export function HomeScreen() {
     }
     cardFlipRef.current = setInterval(() => {
       setCurrentCardId(Math.floor(Math.random() * TOTAL_CARDS));
+      playSound("/sounds/cardload.mp3", 0.8);
     }, CARD_FLIP_INTERVAL);
     return () => {
       if (cardFlipRef.current) clearInterval(cardFlipRef.current);
@@ -244,14 +245,14 @@ export function HomeScreen() {
 
   useEffect(() => {
     const pythiaTimer = setTimeout(() => setPythiaVisible(true), 300);
-    const subtitleFull = "[ DIGITAL_TARO_BOT ]";
+    const subtitleFull = "[ ЦИФРОВОЙ_ТАРО_БОТ ]";
     let si = 0;
     let subtitleTimeout: ReturnType<typeof setTimeout>;
     const typeSubtitle = () => {
       si++;
       setSubtitleText(subtitleFull.slice(0, si));
       if (subtitleFull[si - 1] !== " " && subtitleFull[si - 1] !== "]") {
-        playSound("/sounds/blip.mp3", 0.2);
+        playSound("/sounds/blip.mp3", 0.1);
       }
       if (si < subtitleFull.length) {
         subtitleTimeout = setTimeout(typeSubtitle, 80);
@@ -260,7 +261,7 @@ export function HomeScreen() {
       }
     };
     const subtitleStartTimer = setTimeout(typeSubtitle, 1400);
-    const homeFullText = `ORACLE_STATUS: ONLINE\nMATRIX_SYNC: ESTABLISHED\nWAITING_FOR_INPUT...`;
+    const homeFullText = `СОСТОЯНИЕ_ОРАКУЛА: АКТИВЕН\nСИНХРОНИЗАЦИЯ_МАТРИЦЫ: УСТАНОВЛЕНА\nОЖИДАНИЕ_ВВОДА...`;
     let hi = 0;
     let homeTimeout: ReturnType<typeof setTimeout>;
     const typeHomeText = () => {
@@ -280,10 +281,10 @@ export function HomeScreen() {
         return;
       }
       if (currentChar !== " ") {
-        playSound("/sounds/blip.mp3", 0.2);
+        playSound("/sounds/blip.mp3", 0.1);
       }
       setHomePaused(false);
-      homeTimeout = setTimeout(typeHomeText, 45);
+      homeTimeout = setTimeout(typeHomeText, 70);
     };
     return () => {
       clearTimeout(pythiaTimer);
@@ -302,7 +303,7 @@ export function HomeScreen() {
       >
         <button
           onClick={() => {
-            const nowMuted = toggleMute(0.15);
+            const nowMuted = toggleMute(0.1);
             setMutedState(nowMuted);
           }}
           className="absolute bottom-3 right-3 z-[60] flex flex-col items-center gap-1"
@@ -417,19 +418,20 @@ export function HomeScreen() {
         )}
 
         {!isReading && (
-          <div className="flex justify-center px-6 mt-24 z-20">
+          <div className="flex flex-col items-center px-6 mt-24 z-20">
+            <div className="text-cyan-400/40 text-lg mb-2 animate-bounce">▲</div>
             <button
               onClick={handleInitSession}
-              className="group relative w-full py-4 font-mono uppercase tracking-[0.35em] text-sm text-cyan-200 bg-black border border-cyan-400/40 rounded-md overflow-hidden shadow-[0_0_12px_rgba(34,211,238,0.15)] transition-all duration-300 active:scale-[0.97]"
+              className="group relative w-full py-4 font-mono uppercase tracking-[0.35em] text-sm text-cyan-200 bg-black border border-cyan-400/60 rounded-md overflow-hidden shadow-[0_0_20px_rgba(34,211,238,0.3),0_0_40px_rgba(34,211,238,0.15)] transition-all duration-300 active:scale-[0.97] animate-pulse"
             >
-              <span className="absolute inset-0 border border-cyan-300/20 rounded-md shadow-[inset_0_0_18px_rgba(34,211,238,0.08)]" />
-              <span className="absolute inset-0 bg-gradient-to-r from-transparent via-cyan-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+              <span className="absolute inset-0 border border-cyan-300/30 rounded-md shadow-[inset_0_0_20px_rgba(34,211,238,0.12)]" />
+              <span className="absolute inset-0 bg-gradient-to-r from-transparent via-cyan-500/15 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
               <span className="absolute inset-0 overflow-hidden">
-                <span className="absolute top-0 left-[-130%] w-full h-full bg-gradient-to-r from-transparent via-cyan-300/25 to-transparent group-hover:animate-[scan_1s_linear]" />
+                <span className="absolute top-0 left-[-130%] w-full h-full bg-gradient-to-r from-transparent via-cyan-300/30 to-transparent group-hover:animate-[scan_1s_linear]" />
               </span>
-              <span className="absolute bottom-0 left-0 w-full h-[1px] bg-cyan-300/40 opacity-70 group-hover:opacity-100 transition" />
-              <span className="relative z-10 text-cyan-100 group-hover:text-cyan-50 transition-colors">
-                [ INIT_SESSION ]
+              <span className="absolute bottom-0 left-0 w-full h-[1px] bg-cyan-300/50 opacity-70 group-hover:opacity-100 transition" />
+              <span className="relative z-10 text-cyan-100 group-hover:text-cyan-50 transition-colors drop-shadow-[0_0_8px_rgba(34,211,238,0.6)]">
+                [ ЗАПУСК СЕАНСА ]
               </span>
             </button>
           </div>
@@ -454,9 +456,9 @@ export function HomeScreen() {
                   <span>{statusLine1}</span>
                   <br />
                   <span>
-                    {"STATUS: "}
+                    {"СТАТУС: "}
                     <span className="text-emerald-400">
-                      {statusLine2.replace("STATUS: ", "")}
+                      {statusLine2.replace("СТАТУС: ", "")}
                     </span>
                   </span>
                 </div>
@@ -483,7 +485,7 @@ export function HomeScreen() {
                         : "text-cyan-400 hover:text-cyan-300"
                     }`}
                   >
-                    [TAROT_TOKENS]
+                    [ КУПИТЬ ТОКЕНЫ ]
                   </button>
                 </div>
               )}
@@ -715,7 +717,7 @@ export function HomeScreen() {
             {/* ORACLE IS WATCHING */}
             <div className="py-10 text-center w-full">
               <p className="text-cyan-400/70 text-sm animate-pulse">
-                THE ORACLE IS WATCHING...
+                ОРАКУЛ НАБЛЮДАЕТ...
               </p>
             </div>
           </div>
