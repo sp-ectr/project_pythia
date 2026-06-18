@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, useReducer } from "react";
+import React, { useEffect, useRef, useState, useReducer } from "react";
 import WebApp from "@twa-dev/sdk";
 import backImg from "../assets/back.webp";
 import { useDecrypt } from "../hooks/useDecrypt";
@@ -18,7 +18,7 @@ import {
   appReducer,
   initialState,
   type Scene,
-  type AppAction,
+  type CardInterpretation,
 } from "../state/appReducer";
 
 const TOTAL_CARDS = 77;
@@ -46,9 +46,9 @@ export function HomeScreen() {
 
   const highlightStatus = (text: string) => {
     const keywords = ["АКТИВЕН", "УСТАНОВЛЕНА"];
-    let result: (string | JSX.Element)[] = [text];
+    let result: (string | React.ReactNode)[] = [text];
     for (const kw of keywords) {
-      const parts: (string | JSX.Element)[] = [];
+      const parts: (string | React.ReactNode)[] = [];
       for (const part of result) {
         if (typeof part !== "string") { parts.push(part); continue; }
         const segments = part.split(kw);
