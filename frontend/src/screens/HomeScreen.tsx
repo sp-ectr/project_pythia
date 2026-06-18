@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useReducer } from "react";
 import WebApp from "@twa-dev/sdk";
 import backImg from "../assets/back.webp";
 import { useDecrypt } from "../hooks/useDecrypt";
@@ -14,40 +14,20 @@ import { TokensScene } from "../scenes/TokensScene";
 import { ResultScene } from "../scenes/ResultScene";
 import { ProtocolScene } from "../scenes/ProtocolScene";
 import { FeedbackScene } from "../scenes/FeedbackScene";
-
-type Scene =
-  | "greeting"
-  | "warning"
-  | "tokens"
-  | "rules"
-  | "input"
-  | "loading"
-  | "result"
-  | "protocol"
-  | "feedback";
+import {
+  appReducer,
+  initialState,
+  type Scene,
+  type AppAction,
+} from "../state/appReducer";
 
 const TOTAL_CARDS = 77;
 const MIN_LOADING_MS = 4000;
 const CARD_FLIP_INTERVAL = 1400;
 const RECORDING_MAX_MS = 9000;
 
-interface CardInterpretation {
-  position: number;
-  position_meaning: string;
-  card_id: number;
-  card_name: string;
-  is_reversed: boolean;
-  text: string;
-}
-
-interface OracleResponse {
-  is_safe: boolean;
-  intro?: string;
-  conclusion?: string;
-  card_interpretations: CardInterpretation[];
-}
-
 export function HomeScreen() {
+  const [state, dispatch] = useReducer(appReducer, initialState);
   const containerRef = useRef<HTMLDivElement>(null);
   const terminalRef = useRef<HTMLDivElement>(null);
 
@@ -67,8 +47,6 @@ export function HomeScreen() {
   const [pythiaVisible, setPythiaVisible] = useState(false);
   const [subtitleText, setSubtitleText] = useState("");
 
-  const [isReading, setIsReading] = useState(false);
-  const [scene, setScene] = useState<Scene>("greeting");
   const [terminalVisible, setTerminalVisible] = useState(false);
   const [sceneVisible, setSceneVisible] = useState(false);
 
@@ -79,35 +57,22 @@ export function HomeScreen() {
 
   const [inputIntroDone, setInputIntroDone] = useState(false);
   const [inputIntroText, setInputIntroText] = useState("");
-  const [inputMode, setInputMode] = useState<"choose" | "voice" | "text">(
-    "choose",
-  );
-  const [textQuestion, setTextQuestion] = useState("");
-  const [isRecording, setIsRecording] = useState(false);
-  const [recordingError, setRecordingError] = useState("");
+
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const recordingTimerRef = useRef<ReturnType<typeof setTimeout>>(null);
   const typingActiveRef = useRef(true);
 
-  const [currentCardId, setCurrentCardId] = useState(0);
-  const [apiDone, setApiDone] = useState(false);
-  const [minTimeDone, setMinTimeDone] = useState(false);
-  const [loadingStatus, setLoadingStatus] = useState("SCANNING_MATRIX");
   const cardFlipRef = useRef<ReturnType<typeof setInterval>>(null);
-  const canProceed = apiDone && minTimeDone;
 
-  const [readingResult, setReadingResult] = useState<OracleResponse | null>(
-    null,
-  );
   const [mutedState, setMutedState] = useState(false);
 
-  const userId = "471019051";
-  const neuroTokens = 1;
+  const { currentScene: scene, isReading, tokensBalance, inputState, generationState, typingDone } = state;
+  const canProceed = generationState.apiDone && generationState.minTimeoutDone;
 
   const statusLine1 = useDecrypt(
-    `ID_УЗЛА: ${userId} // ДОСТУП: ГОСТЬ`,
+    `ID_УЗЛА: ${state.nodeId} // ДОСТУП: ГОСТЬ`,
     terminalVisible,
     1000,
   );
@@ -117,7 +82,7 @@ export function HomeScreen() {
     1000,
   );
   const tokensLabel = useDecrypt(
-    `БАЛАНС: ${neuroTokens} ТОКЕН`,
+    `БАЛАНС: ${tokensBalance} ТОКЕН`,
     terminalVisible,
     1000,
   );
@@ -126,14 +91,11 @@ export function HomeScreen() {
     scrollToTop();
     setSceneVisible(false);
     setTimeout(() => {
-      setScene(next);
+      dispatch({ type: "TRANSITION_TO_SCENE", scene: next });
       if (next === "input") {
         setInputIntroDone(false);
         setInputIntroText("");
-        setInputMode("choose");
-        setTextQuestion("");
-        setIsRecording(false);
-        setRecordingError("");
+        dispatch({ type: "CHANGE_INPUT_METHOD", mode: "choose" });
       }
       setSceneVisible(true);
     }, 350);
@@ -141,12 +103,9 @@ export function HomeScreen() {
 
   const startLoading = () => {
     switchScene("loading");
-    setApiDone(false);
-    setMinTimeDone(false);
-    setLoadingStatus("SCANNING_MATRIX");
-    setCurrentCardId(Math.floor(Math.random() * TOTAL_CARDS));
+    dispatch({ type: "TRIGGER_MATRIX_READING" });
 
-    setTimeout(() => setMinTimeDone(true), MIN_LOADING_MS);
+    setTimeout(() => dispatch({ type: "SET_MIN_TIMEOUT_REACHED" }), MIN_LOADING_MS);
 
     const statuses = [
       "СКАНИРОВАНИЕ_МАТРИЦЫ",
@@ -155,10 +114,17 @@ export function HomeScreen() {
       "КОНСУЛЬТАЦИЯ_С_ОРАКУЛОМ",
     ];
     statuses.forEach((s, i) => {
-      setTimeout(() => setLoadingStatus(s), i * 1000);
+      setTimeout(() => dispatch({ type: "SET_LOADING_STATUS", status: s }), i * 1000);
     });
 
-    setTimeout(() => setApiDone(true), 2500 + Math.random() * 3000);
+    setTimeout(() => {
+      dispatch({ type: "SET_MIN_TIMEOUT_REACHED" });
+      dispatch({ type: "SET_API_DATA_LOADED", result: {
+        intro: "Душа, ищущая опоры в потоках кода и золота, ты пришла к порогу, где зеркала отражают не то, что ты желаешь видеть, а то, что ты боишься признать.",
+        conclusion: "Офер придет не как подарок, а как трофей, добытый в схватке.",
+        card_interpretations: [],
+      }});
+    }, 2500 + Math.random() * 3000);
   };
 
   useEffect(() => {
@@ -167,7 +133,7 @@ export function HomeScreen() {
       return;
     }
     cardFlipRef.current = setInterval(() => {
-      setCurrentCardId(Math.floor(Math.random() * TOTAL_CARDS));
+      dispatch({ type: "SET_CURRENT_CARD_ID", cardId: Math.floor(Math.random() * TOTAL_CARDS) });
       playSound("/sounds/cardload.mp3", 0.8);
     }, CARD_FLIP_INTERVAL);
     return () => {
@@ -182,26 +148,22 @@ export function HomeScreen() {
     stopAll();
     playSound("/sounds/start.mp3", 0.5);
     scrollToTop();
-    setIsReading(true);
+    dispatch({ type: "START_SESSION" });
+    setTerminalVisible(true);
+    setSceneVisible(true);
 
-    if (neuroTokens <= 0) {
-      setScene("tokens");
-      setTerminalVisible(true);
-      setSceneVisible(true);
+    if (tokensBalance <= 0) {
+      dispatch({ type: "TRANSITION_TO_SCENE", scene: "tokens" });
     } else {
-      setScene("greeting");
-      setTimeout(() => {
-        setTerminalVisible(true);
-        setSceneVisible(true);
-      }, 1300);
+      dispatch({ type: "TRANSITION_TO_SCENE", scene: "greeting" });
     }
   };
 
   useEffect(() => {
-    if (inputMode === "text" && textareaRef.current) {
+    if (inputState.mode === "text" && textareaRef.current) {
       setTimeout(() => textareaRef.current?.focus(), 100);
     }
-  }, [inputMode]);
+  }, [inputState.mode]);
 
   useEffect(() => {
     if (!isReading) {
@@ -211,7 +173,7 @@ export function HomeScreen() {
   }, [isReading]);
 
   const handleVoice = async () => {
-    setRecordingError("");
+    dispatch({ type: "SET_MIC_ERROR", error: "" });
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       audioChunksRef.current = [];
@@ -222,30 +184,28 @@ export function HomeScreen() {
         if (e.data.size > 0) audioChunksRef.current.push(e.data);
       };
       mediaRecorder.onstart = () => {
-        setIsRecording(true);
+        dispatch({ type: "START_MIC_RECORDING" });
         recordingTimerRef.current = setTimeout(
           () => mediaRecorder.stop(),
           RECORDING_MAX_MS,
         );
       };
       mediaRecorder.onstop = () => {
-        setIsRecording(false);
+        dispatch({ type: "STOP_MIC_RECORDING" });
         if (recordingTimerRef.current) clearTimeout(recordingTimerRef.current);
         stream.getTracks().forEach((t) => t.stop());
       };
 
       mediaRecorder.start();
-      setInputMode("voice");
+      dispatch({ type: "CHANGE_INPUT_METHOD", mode: "voice" });
     } catch (err: any) {
       if (
         err.name === "NotAllowedError" ||
         err.name === "PermissionDeniedError"
       ) {
-        setRecordingError(
-          "ДОСТУП К МИКРОФОНУ ЗАПРЕЩЁН. Разрешите доступ в настройках браузера.",
-        );
+        dispatch({ type: "SET_MIC_ERROR", error: "ДОСТУП К МИКРОФОНУ ЗАПРЕЩЁН. Разрешите доступ в настройках браузера." });
       } else {
-        setRecordingError("ОШИБКА ИНИЦИАЛИЗАЦИИ МИКРОФОНА.");
+        dispatch({ type: "SET_MIC_ERROR", error: "ОШИБКА ИНИЦИАЛИЗАЦИИ МИКРОФОНА." });
       }
     }
   };
@@ -430,7 +390,7 @@ export function HomeScreen() {
                     height: "336px",
                   }}
                 >
-                  <GlitchCard cardId={currentCardId} />
+                  <GlitchCard cardId={generationState.currentCardId} />
                 </div>
               )}
             </div>
@@ -487,7 +447,7 @@ export function HomeScreen() {
               {scene !== "result" && scene !== "loading" && (
                 <div
                   className={`ml-[45%] mr-[-6%] flex flex-col bg-black/50 p-3 mb-5 transition-colors duration-500 ${
-                    neuroTokens <= 0
+                    tokensBalance <= 0
                       ? "border-rose-500/25 text-rose-400/90"
                       : "border-cyan-500/20 text-cyan-400/90"
                   }`}
@@ -500,7 +460,7 @@ export function HomeScreen() {
                       switchScene("tokens");
                     }}
                     className={`transition-colors duration-300 underline decoration-dotted underline-offset-4 text-xs self-start ${
-                      neuroTokens <= 0
+                      tokensBalance <= 0
                         ? "text-rose-400 hover:text-rose-300"
                         : "text-cyan-400 hover:text-cyan-300"
                     }`}
@@ -554,8 +514,8 @@ export function HomeScreen() {
                       console.log("Purchase bundle:", bundleId);
                     }}
                     onCancel={() => {
-                      if (neuroTokens <= 0) {
-                        setIsReading(false);
+                      if (tokensBalance <= 0) {
+                        dispatch({ type: "TERMINATE_SESSION" });
                       } else {
                         switchScene("greeting");
                       }
@@ -585,12 +545,12 @@ export function HomeScreen() {
                     inputIntroDone={inputIntroDone}
                     setInputIntroText={setInputIntroText}
                     setInputIntroDone={setInputIntroDone}
-                    inputMode={inputMode}
-                    setInputMode={setInputMode}
-                    textQuestion={textQuestion}
-                    setTextQuestion={setTextQuestion}
-                    isRecording={isRecording}
-                    recordingError={recordingError}
+                    inputMode={inputState.mode}
+                    setInputMode={(mode) => dispatch({ type: "CHANGE_INPUT_METHOD", mode })}
+                    textQuestion={inputState.textQuestion}
+                    setTextQuestion={(text) => dispatch({ type: "SET_TEXT_QUESTION", text })}
+                    isRecording={inputState.isRecording}
+                    recordingError={inputState.recordingError}
                     onVoiceStart={handleVoice}
                     onVoiceStop={handleStopRecording}
                   />
@@ -599,8 +559,8 @@ export function HomeScreen() {
                 {scene === "loading" && (
                   <LoadingScene
                     isVisible={sceneVisible}
-                    loadingStatus={loadingStatus}
-                    apiDone={apiDone}
+                    loadingStatus={generationState.loadingStatus}
+                    apiDone={generationState.apiDone}
                     canProceed={canProceed}
                     onComplete={() => {
                       const mockCards: CardInterpretation[] = [
@@ -618,7 +578,7 @@ export function HomeScreen() {
                           card_id: 50,
                           card_name: "Lorem II",
                           is_reversed: false,
-                          text: "Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore veritatis et quasi architecto beatae vitae dicta sunt explicabo. Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit.",
+                          text: "Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore veritatis et quasi architecto beatae vitae dicta sunt explicabo.",
                         },
                         {
                           position: 3,
@@ -626,7 +586,7 @@ export function HomeScreen() {
                           card_id: 1,
                           card_name: "Lorem III",
                           is_reversed: true,
-                          text: "At vero eos et accusamus et iusto odio dignissimos ducimus qui blanditiis praesentium voluptatum deleniti atque corrupti quos dolores et quas molestias excepturi sint occaecati cupiditate non provident, similique sunt in culpa qui officia deserunt mollitia animi.",
+                          text: "At vero eos et accusamus et iusto odio dignissimos ducimus qui blanditiis praesentium voluptatum deleniti atque corrupti quos dolores et quas molestias excepturi sint occaecati cupiditate non provident.",
                         },
                         {
                           position: 4,
@@ -634,7 +594,7 @@ export function HomeScreen() {
                           card_id: 6,
                           card_name: "Lorem IV",
                           is_reversed: false,
-                          text: "Nam libero tempore, cum soluta nobis est eligendi optio cumque nihil impedit quo minus id quod maxime placeat facere possimus, omnis voluptas assumenda est, omnis dolor repellendus. Temporibus autem quibusdam et aut officiis debitis aut rerum necessitatibus saepe eveniet.",
+                          text: "Nam libero tempore, cum soluta nobis est eligendi optio cumque nihil impedit quo minus id quod maxime placeat facere possimus, omnis voluptas assumenda est, omnis dolor repellendus.",
                         },
                         {
                           position: 5,
@@ -650,7 +610,7 @@ export function HomeScreen() {
                           card_id: 52,
                           card_name: "Lorem VI",
                           is_reversed: false,
-                          text: "Temporibus autem quibusdam et aut officiis debitis aut rerum necessitatibus saepe eveniet ut et voluptates repudiandae sint et molestiae non recusandae. Itaque earum rerum hic tenetur a sapiente delectus.",
+                          text: "Temporibus autem quibusdam et aut officiis debitis aut rerum necessitatibus saepe eveniet ut et voluptates repudiandae sint et molestiae non recusandae.",
                         },
                         {
                           position: 7,
@@ -685,35 +645,39 @@ export function HomeScreen() {
                           text: "Nam libero tempore, cum soluta nobis est eligendi optio cumque nihil impedit quo minus id quod maxime placeat facere possimus, omnis voluptas assumenda est, omnis dolor repellendus.",
                         },
                       ];
-                      const mockResult: OracleResponse = {
-                        is_safe: true,
-                        intro:
-                          "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris.",
-                        conclusion:
-                          "At vero eos et accusamus et iusto odio dignissimos ducimus qui blanditiis praesentium voluptatum deleniti atque corrupti quos dolores et quas molestias excepturi sint occaecati cupiditate non provident. Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium.",
-                        card_interpretations: mockCards,
-                      };
-                      setReadingResult(mockResult);
+                      dispatch({
+                        type: "SET_API_DATA_LOADED",
+                        result: {
+                          intro: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris.",
+                          conclusion: "At vero eos et accusamus et iusto odio dignissimos ducimus qui blanditiis praesentium voluptatum deleniti atque corrupti quos dolores et quas molestias excepturi sint occaecati cupiditate non provident.",
+                          card_interpretations: mockCards,
+                        },
+                      });
                       switchScene("result");
                     }}
                     onCancel={() => {
                       if (cardFlipRef.current)
                         clearInterval(cardFlipRef.current);
-                      setIsReading(false);
+                      dispatch({ type: "TERMINATE_SESSION" });
+                    }}
+                    onCancel={() => {
+                      if (cardFlipRef.current)
+                        clearInterval(cardFlipRef.current);
+                      dispatch({ type: "TERMINATE_SESSION" });
                     }}
                   />
                 )}
 
-                {scene === "result" && readingResult?.card_interpretations && (
+                {scene === "result" && state.sessionResult?.card_interpretations && (
                   <ResultScene
                     isVisible={sceneVisible}
-                    cards={readingResult.card_interpretations}
-                    intro={readingResult.intro}
-                    conclusion={readingResult.conclusion}
+                    cards={state.sessionResult.card_interpretations}
+                    intro={state.sessionResult.intro}
+                    conclusion={state.sessionResult.conclusion}
                     onScrollToTop={scrollToTop}
                     onShowFeedback={() => switchScene("feedback")}
                     onReset={() => {
-                      setIsReading(false);
+                      dispatch({ type: "TERMINATE_SESSION" });
                       switchScene("greeting");
                     }}
                   />
@@ -726,7 +690,7 @@ export function HomeScreen() {
                       console.log("Feedback:", { rating, text });
                     }}
                     onSkip={() => {
-                      setIsReading(false);
+                      dispatch({ type: "TERMINATE_SESSION" });
                       switchScene("greeting");
                     }}
                   />
