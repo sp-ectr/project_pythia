@@ -303,7 +303,7 @@ export function ResultScene({
           {step === "oracle_intro"
             ? "[ раскрыть расклад ]"
             : step === "card_intro"
-              ? "[ декодировать ]"
+              ? "[ открыть ]"
               : step === "card_reading" && currentIndex === cards.length - 1
                 ? "[ показать итог ]"
                 : step === "oracle_conclusion"

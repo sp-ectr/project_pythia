@@ -1,14 +1,24 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { TerminalButton } from "../components/ui/TerminalButton";
 import { playSound } from "../utils/sound";
+import { useDecrypt } from "../hooks/useDecrypt";
 
 interface FeedbackSceneProps {
   isVisible: boolean;
   onSubmit: (rating: number, text: string) => void;
   onSkip: () => void;
+  nodeId?: string;
 }
 
-const MOCK_REVIEWS = [
+interface Review {
+  id: number;
+  user: string;
+  rating: number;
+  text: string;
+  date: string;
+}
+
+const INITIAL_REVIEWS: Review[] = [
   {
     id: 1,
     user: "node_7721",
@@ -32,6 +42,27 @@ const MOCK_REVIEWS = [
   },
 ];
 
+function ReviewCard({ review }: { review: Review }) {
+  const decrypted = useDecrypt(review.text, true, 800);
+
+  return (
+    <div className="border border-cyan-500/10 bg-black/30 p-3 rounded-md">
+      <div className="flex items-center justify-between mb-1">
+        <span className="text-[10px] text-cyan-400/60 font-mono tracking-wider">
+          {review.user}
+        </span>
+        <span className="text-[10px] text-cyan-300 font-mono">
+          {"★".repeat(review.rating)}
+          {"☆".repeat(5 - review.rating)}
+        </span>
+      </div>
+      <p className="text-slate-400 text-[12px] leading-relaxed font-mono">
+        {decrypted}
+      </p>
+    </div>
+  );
+}
+
 function StarRating({
   rating,
   onRate,
@@ -47,7 +78,7 @@ function StarRating({
         <button
           key={n}
           onClick={() => {
-            playSound("/sounds/decript.mp3", 0.4);
+            playSound("/sounds/blip.mp3", 0.3);
             onRate(n);
           }}
           onMouseEnter={() => setHovered(n)}
@@ -69,13 +100,33 @@ export function FeedbackScene({
   isVisible,
   onSubmit,
   onSkip,
+  nodeId = "471019051",
 }: FeedbackSceneProps) {
   const [rating, setRating] = useState(0);
   const [text, setText] = useState("");
   const [submitted, setSubmitted] = useState(false);
+  const [showError, setShowError] = useState(false);
+  const [reviews, setReviews] = useState<Review[]>(INITIAL_REVIEWS);
+
+  useEffect(() => {
+    if (rating > 0 && showError) {
+      setShowError(false);
+    }
+  }, [rating, showError]);
 
   const handleSubmit = () => {
-    if (rating === 0) return;
+    if (rating === 0) {
+      setShowError(true);
+      return;
+    }
+    const newReview: Review = {
+      id: Date.now(),
+      user: `node_${nodeId.slice(-4)}`,
+      rating,
+      text: text || "Без комментария",
+      date: new Date().toISOString().split("T")[0],
+    };
+    setReviews([newReview, ...reviews]);
     setSubmitted(true);
     onSubmit(rating, text);
   };
@@ -89,7 +140,7 @@ export function FeedbackScene({
           ОТЗЫВ // ОТПРАВЛЕН
         </div>
         <div className="text-slate-300 text-[14px] mb-6">
-          Спасибо, твой голос записан в потоке данных.
+          Спасибо, ваш голос записан в потоке данных.
         </div>
         <TerminalButton variant="primary" onClick={onSkip}>
           [ завершить ]
@@ -101,11 +152,11 @@ export function FeedbackScene({
   return (
     <div>
       <div className="text-sm text-cyan-400/60 tracking-widest mb-3 uppercase">
-        ОЦЕНИ СЕАНС
+        ОЦЕНИТЬ
       </div>
 
       <div className="text-slate-300 text-[13px] mb-5 border-l-2 border-cyan-400/40 pl-4">
-        Оцени точность расклада. Твой голос помогает Пифии становится лучше.
+        Оцените точность расклада. Ваш голос помогает Пифии становиться лучше.
       </div>
 
       <div className="mb-4">
@@ -115,6 +166,12 @@ export function FeedbackScene({
         <StarRating rating={rating} onRate={setRating} />
       </div>
 
+      {showError && (
+        <div className="text-[11px] text-rose-400 border border-rose-500/30 bg-rose-500/5 p-2 mb-4 animate-pulse">
+          ▸ ОШИБКА: НУЛЕВАЯ СИНХРОНИЗАЦИЯ. ВЫБЕРИТЕ КОЛИЧЕСТВО ЗВЕЗД.
+        </div>
+      )}
+
       <div className="mb-5">
         <div className="text-[11px] text-slate-500 tracking-widest mb-2">
           КОММЕНТАРИЙ // НЕОБЯЗАТЕЛЬНО:
@@ -122,7 +179,7 @@ export function FeedbackScene({
         <textarea
           value={text}
           onChange={(e) => setText(e.target.value)}
-          placeholder="Расскажи, что Пифия угадала..."
+          placeholder="Расскажите, что Пифия угадала..."
           rows={3}
           maxLength={200}
           className="w-full bg-black border border-cyan-500/20 text-slate-200 text-[13px] leading-relaxed placeholder:text-slate-600 resize-none outline-none p-3 font-mono tracking-wide caret-cyan-400 rounded-md"
@@ -136,7 +193,6 @@ export function FeedbackScene({
         <TerminalButton
           variant="primary"
           onClick={handleSubmit}
-          disabled={rating === 0}
         >
           [ отправить ]
         </TerminalButton>
@@ -145,30 +201,14 @@ export function FeedbackScene({
         </TerminalButton>
       </div>
 
-      {MOCK_REVIEWS.length > 0 && (
+      {reviews.length > 0 && (
         <div>
           <div className="text-[11px] text-slate-500 tracking-widest mb-3 border-t border-cyan-500/10 pt-4">
             // ПОСЛЕДНИЕ ОТЗЫВЫ
           </div>
           <div className="flex flex-col gap-3">
-            {MOCK_REVIEWS.map((r) => (
-              <div
-                key={r.id}
-                className="border border-cyan-500/10 bg-black/30 p-3 rounded-md"
-              >
-                <div className="flex items-center justify-between mb-1">
-                  <span className="text-[10px] text-cyan-400/60 font-mono tracking-wider">
-                    {r.user}
-                  </span>
-                  <span className="text-[10px] text-cyan-300 font-mono">
-                    {"★".repeat(r.rating)}
-                    {"☆".repeat(5 - r.rating)}
-                  </span>
-                </div>
-                <p className="text-slate-400 text-[12px] leading-relaxed">
-                  {r.text}
-                </p>
-              </div>
+            {reviews.map((r) => (
+              <ReviewCard key={r.id} review={r} />
             ))}
           </div>
         </div>

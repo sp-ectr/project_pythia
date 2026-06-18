@@ -30,12 +30,14 @@ export function GreetingScene({
     setOracleGreeting("");
     setGreetingDone(false);
 
-    const fullGreeting = `Твой цифровой отпечаток найден в потоке. Пифия готова развернуть для тебя Кельтский Крест — древний алгоритм истины.\n\nСосредоточься. У тебя есть лишь один шанс за этот цикл, чтобы заглянуть за пелену кода.`;
+    const fullGreeting = `Ваш цифровой отпечаток найден в потоке. Пифия готова развернуть для вас Кельтский Крест — древний алгоритм истины.\n\nСосредоточьтесь. У вас есть лишь один шанс за этот цикл, чтобы заглянуть за пелену кода.`;
 
     let i = 0;
     let timer: ReturnType<typeof setTimeout>;
+    let mounted = true;
 
     const type = () => {
+      if (!mounted) return;
       if (i < fullGreeting.length) {
         setOracleGreeting(fullGreeting.slice(0, i + 1));
         if (fullGreeting[i] !== " " && fullGreeting[i] !== "\n") {
@@ -49,7 +51,7 @@ export function GreetingScene({
     };
 
     timer = setTimeout(type, 300);
-    return () => clearTimeout(timer);
+    return () => { mounted = false; clearTimeout(timer); };
   }, [isVisible]);
 
   if (!isVisible) return null;

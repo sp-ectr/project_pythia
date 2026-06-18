@@ -23,7 +23,7 @@ export function WarningScene({
   setOracleWarning,
   setWarningDone,
 }: WarningSceneProps) {
-  const fullWarning = `Помни: Матрица не терпит праздности. На бессмысленный шум или тьму в словах Оракул ответит молчанием, а твой доступ будет ограничен.\n\nСформулируй свой запрос вдумчиво.\nУважая:`;
+  const fullWarning = `Помните: Матрица не терпит праздности. На бессмысленный шум или тьму в словах Оракул ответит молчанием, а ваш доступ будет ограничен.\n\nСформулируйте свой запрос вдумчиво.\nУважая:`;
 
   const decryptedText = useDecrypt(fullWarning, isVisible, 1000);
 

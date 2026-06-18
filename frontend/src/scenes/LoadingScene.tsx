@@ -37,7 +37,7 @@ export function LoadingScene({
         <Ouroboros />
       </div>
       <p className="text-slate-500 text-xs tracking-widest uppercase mb-8 text-center animate-pulse">
-        Пифия читает твой вектор
+        Пифия читает ваш вектор
       </p>
       <div className="w-full flex items-center gap-2 mb-8 text-xs">
         <div

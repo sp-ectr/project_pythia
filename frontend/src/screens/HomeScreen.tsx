@@ -43,6 +43,26 @@ export function HomeScreen() {
   };
 
   const [homeText, setHomeText] = useState("");
+
+  const highlightStatus = (text: string) => {
+    const keywords = ["АКТИВЕН", "УСТАНОВЛЕНА"];
+    let result: (string | JSX.Element)[] = [text];
+    for (const kw of keywords) {
+      const parts: (string | JSX.Element)[] = [];
+      for (const part of result) {
+        if (typeof part !== "string") { parts.push(part); continue; }
+        const segments = part.split(kw);
+        segments.forEach((seg, i) => {
+          parts.push(seg);
+          if (i < segments.length - 1) {
+            parts.push(<span key={kw + i} className="text-green-400">{kw}</span>);
+          }
+        });
+      }
+      result = parts;
+    }
+    return result;
+  };
   const [homePaused, setHomePaused] = useState(false);
   const [pythiaVisible, setPythiaVisible] = useState(false);
   const [subtitleText, setSubtitleText] = useState("");
@@ -68,7 +88,7 @@ export function HomeScreen() {
 
   const [mutedState, setMutedState] = useState(false);
 
-  const { currentScene: scene, isReading, tokensBalance, inputState, generationState, typingDone } = state;
+  const { currentScene: scene, isReading, tokensBalance, inputState, generationState } = state;
   const canProceed = generationState.apiDone && generationState.minTimeoutDone;
 
   const statusLine1 = useDecrypt(
@@ -101,7 +121,8 @@ export function HomeScreen() {
     }, 350);
   };
 
-  const startLoading = () => {
+  const startLoading = (question: string) => {
+    dispatch({ type: "SET_TEXT_QUESTION", text: question });
     switchScene("loading");
     dispatch({ type: "TRIGGER_MATRIX_READING" });
 
@@ -120,7 +141,7 @@ export function HomeScreen() {
     setTimeout(() => {
       dispatch({ type: "SET_MIN_TIMEOUT_REACHED" });
       dispatch({ type: "SET_API_DATA_LOADED", result: {
-        intro: "Душа, ищущая опоры в потоках кода и золота, ты пришла к порогу, где зеркала отражают не то, что ты желаешь видеть, а то, что ты боишься признать.",
+        intro: "Душа, ищущая опоры в потоках кода и золота, вы пришли к порогу, где зеркала отражают не то, что вы желаете видеть, а то, что вы боитесь признать.",
         conclusion: "Офер придет не как подарок, а как трофей, добытый в схватке.",
         card_interpretations: [],
       }});
@@ -194,6 +215,12 @@ export function HomeScreen() {
         dispatch({ type: "STOP_MIC_RECORDING" });
         if (recordingTimerRef.current) clearTimeout(recordingTimerRef.current);
         stream.getTracks().forEach((t) => t.stop());
+
+        setTimeout(() => {
+          const mockQuestion = "Какое будущее ждёт мои коммиты?";
+          dispatch({ type: "SET_TEXT_QUESTION", text: mockQuestion });
+          startLoading(mockQuestion);
+        }, 1500);
       };
 
       mediaRecorder.start();
@@ -336,7 +363,7 @@ export function HomeScreen() {
               style={{ fontSize: "11px", minHeight: "54px" }}
               className="w-full text-cyan-400/80 tracking-[0.15em] leading-relaxed font-mono whitespace-pre-line"
             >
-              {homeText}
+              {highlightStatus(homeText)}
               {homeText.length > 0 && <Cursor isBlinking={homePaused} />}
             </div>
           </div>
@@ -660,11 +687,6 @@ export function HomeScreen() {
                         clearInterval(cardFlipRef.current);
                       dispatch({ type: "TERMINATE_SESSION" });
                     }}
-                    onCancel={() => {
-                      if (cardFlipRef.current)
-                        clearInterval(cardFlipRef.current);
-                      dispatch({ type: "TERMINATE_SESSION" });
-                    }}
                   />
                 )}
 
@@ -691,8 +713,8 @@ export function HomeScreen() {
                     }}
                     onSkip={() => {
                       dispatch({ type: "TERMINATE_SESSION" });
-                      switchScene("greeting");
                     }}
+                    nodeId={state.nodeId}
                   />
                 )}
               </div>

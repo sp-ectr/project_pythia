@@ -8,7 +8,7 @@ interface RulesSceneProps {
 
 export function RulesScene({ isVisible, onAcknowledge }: RulesSceneProps) {
   const p1 = useDecrypt(
-    "Пифия не машина для развлечений. Она считывает твой вектор.",
+    "Пифия не машина для развлечений. Она считывает ваш вектор.",
     isVisible,
     1200,
   );
@@ -29,7 +29,7 @@ export function RulesScene({ isVisible, onAcknowledge }: RulesSceneProps) {
     isVisible,
     1200,
   );
-  const p5 = useDecrypt("Уважай Оракула.", isVisible, 1200);
+  const p5 = useDecrypt("Уважайте Оракула.", isVisible, 1200);
 
   if (!isVisible) return null;
 
