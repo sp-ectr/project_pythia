@@ -16,6 +16,7 @@ interface Review {
   rating: number;
   text: string;
   date: string;
+  isNew?: boolean;
 }
 
 const INITIAL_REVIEWS: Review[] = [
@@ -43,7 +44,8 @@ const INITIAL_REVIEWS: Review[] = [
 ];
 
 function ReviewCard({ review }: { review: Review }) {
-  const decrypted = useDecrypt(review.text, true, 800);
+  const decrypted = useDecrypt(review.text, !!review.isNew, 800);
+  const textToShow = review.isNew ? decrypted : review.text;
 
   return (
     <div className="border border-cyan-500/10 bg-black/30 p-3 rounded-md">
@@ -57,7 +59,7 @@ function ReviewCard({ review }: { review: Review }) {
         </span>
       </div>
       <p className="text-slate-400 text-[12px] leading-relaxed font-mono">
-        {decrypted}
+        {textToShow}
       </p>
     </div>
   );
@@ -125,6 +127,7 @@ export function FeedbackScene({
       rating,
       text: text || "Без комментария",
       date: new Date().toISOString().split("T")[0],
+      isNew: true,
     };
     setReviews([newReview, ...reviews]);
     setSubmitted(true);

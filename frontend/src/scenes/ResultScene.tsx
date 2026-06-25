@@ -164,7 +164,10 @@ export function ResultScene({
     let titleIdx = 0;
     let textIdx = 0;
 
-    const titleTimer = setInterval(() => {
+    let titleTimer: ReturnType<typeof setInterval>;
+    let textTimer: ReturnType<typeof setInterval>;
+
+    titleTimer = setInterval(() => {
       if (titleIdx < activeTitle.length) {
         setDisplayedTitle(activeTitle.slice(0, titleIdx + 1));
         if (activeTitle[titleIdx] !== " ") {
@@ -173,7 +176,7 @@ export function ResultScene({
         titleIdx++;
       } else {
         clearInterval(titleTimer);
-        const textTimer = setInterval(() => {
+        textTimer = setInterval(() => {
           if (textIdx < activeText.length) {
             setDisplayedText(activeText.slice(0, textIdx + 1));
             if (activeText[textIdx] !== " " && activeText[textIdx] !== "\n") {
@@ -188,7 +191,10 @@ export function ResultScene({
       }
     }, 60);
 
-    return () => clearInterval(titleTimer);
+    return () => {
+      clearInterval(titleTimer);
+      clearInterval(textTimer);
+    };
   }, [currentIndex, isVisible, step, card?.position, intro, conclusion]);
 
   if (!isVisible) return null;
