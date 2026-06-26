@@ -4,6 +4,7 @@ from fastapi import Request
 from slowapi import Limiter
 from slowapi.util import get_remote_address
 
+
 # Пробуем достать tg_id из заголовка X-TG-Data - если пусто откатываемся на IP
 # Отдаем сырой Request slowapi до логики FastAPI
 def get_tg_user_id(request: Request) -> str:
@@ -19,7 +20,5 @@ def get_tg_user_id(request: Request) -> str:
             pass
     return get_remote_address(request)
 
+
 limiter = Limiter(key_func=get_tg_user_id)
-
-
-

@@ -58,8 +58,11 @@ class BotAdapterSettings(_BaseSettings):
 
        Attributes:
            bot_token: Authentication token for the bot platform.
+           admin_ids: List of privileged user IDs with administrator access.
        """
     bot_token: str
+    admin_ids: list[int] = Field(default_factory=list)
+
 
 class WisperGroqSettings(_BaseSettings):
     """
@@ -87,5 +90,6 @@ class Settings(_BaseSettings):
     llm: LLMSettings = Field(default_factory=LLMSettings)
     bot: BotAdapterSettings = Field(default_factory=BotAdapterSettings)
     wisper: WisperGroqSettings = Field(default_factory=WisperGroqSettings)
+
 
 settings = Settings()

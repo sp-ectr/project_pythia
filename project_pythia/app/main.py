@@ -2,6 +2,8 @@ from fastapi import FastAPI, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from starlette.middleware.cors import CORSMiddleware
+from project_pythia.app.core.logging_config import setup_logging
+setup_logging()
 
 from project_pythia.app.core.limiter import limiter
 from slowapi.middleware import SlowAPIMiddleware
