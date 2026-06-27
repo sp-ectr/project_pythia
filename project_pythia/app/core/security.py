@@ -1,14 +1,18 @@
 import hmac
 import hashlib
 import json
+import logging
 import time
 from urllib.parse import parse_qs
 from fastapi import HTTPException, Header, Depends
 from project_pythia.app.core.config import settings
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
+from sqlalchemy.exc import IntegrityError
 from project_pythia.app.core.db import get_session
 from project_pythia.app.models.user import User
+
+logger = logging.getLogger(__name__)
 
 
 def _validate_init_data(init_data: str) -> dict:
@@ -64,6 +68,7 @@ def _validate_init_data(init_data: str) -> dict:
     except json.JSONDecodeError:
         raise HTTPException(401, "Invalid user payload")
 
+
 # Ждем initData в заголовке
 async def get_user(
         x_tg_data: str = Header(..., alias="X-TG-Data"), session: AsyncSession = Depends(get_session)
@@ -76,6 +81,28 @@ async def get_user(
     user = result.scalar_one_or_none()
 
     if not user:
-        raise HTTPException(status_code=404, detail="User not registered")
+        try:
+            user = User(
+                tg_id=tg_id,
+                username=user_data.get("username", "unknown"),
+                language_code=user_data.get("language_code", "ru"),
+                tokens=1
+            )
+        except IntegrityError:
+            await session.rollback()
+            logger.info(f"Registration race condition handled for tg_id={tg_id}. Fetching existing user.")
+
+            stmt = select(User).where(User.tg_id == tg_id)
+            result = await session.execute(stmt)
+            user = result.scalar_one_or_none()
+
+            if not user:
+                raise HTTPException(status_code=500, detail="Database consistency anomaly")
+
+        except Exception as e:
+            await session.rollback()
+            logger.error(f"Failed to auto-register user tg_id={tg_id}: {e}", exc_info=True)
+            raise HTTPException(status_code=500, detail="Database registration error")
 
     return user
+

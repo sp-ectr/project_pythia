@@ -34,7 +34,7 @@ async def ask_oracle(
         user: User = Depends(get_user),
         session: AsyncSession = Depends(get_session)
 ):
-    if not user.tg_id in settings.bot.admin_ids:
+    if user.tg_id not in settings.bot.admin_ids:
         # Чекаем страйки если больше 3 подозреваем на вредительство пока просто пробрасываем.
         if user.strikes >= 3:
             logger.warning(f"Blocked user_id={user.id} (tg_id={user.tg_id}): too many strikes ({user.strikes})")
@@ -79,7 +79,7 @@ async def ask_oracle(
         return AskPythiaResponse(reading_id=None, is_safe=False, refusal_reason=oracle_res.refusal_reason)
 
     try:
-        if not user.tg_id in settings.bot.admin_ids:
+        if user.tg_id not in settings.bot.admin_ids:
             result = await session.execute(
                 update(User)
                 .where(User.id == user.id)
@@ -95,6 +95,11 @@ async def ask_oracle(
                     f"Race condition: tokens depleted mid-request for user_id={user.id} (tg_id={user.tg_id})"
                 )
                 raise HTTPException(403, "No tokens left (race condition protected)")
+
+            logger.info(
+                f"Successfully debited 1 token from user_id={user.id} (tg_id={user.tg_id}). "
+                f"Tokens remaining: {updated}"
+            )
 
         # Сохраняем результат гадания
         new_reading = Reading(

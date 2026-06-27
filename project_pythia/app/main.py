@@ -8,6 +8,7 @@ setup_logging()
 from project_pythia.app.core.limiter import limiter
 from slowapi.middleware import SlowAPIMiddleware
 from project_pythia.app.api.oracle import router as oracle_router
+from project_pythia.app.api.users import router as users_router
 from project_pythia.app.core.db import get_session
 from project_pythia.app.models.user import User
 from project_pythia.app.core.security import get_user
@@ -25,6 +26,7 @@ app.add_middleware(
 )
 
 app.include_router(oracle_router, prefix="/api")
+app.include_router(users_router, prefix="/api")
 
 
 @app.get("/health")
