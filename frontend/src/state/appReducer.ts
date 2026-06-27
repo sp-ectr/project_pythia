@@ -37,7 +37,7 @@ export interface CardInterpretation {
 export interface SessionResult {
   intro: string;
   conclusion: string;
-  card_interpretations: CardInterpretation[];
+  cards_interpretation: CardInterpretation[];
 }
 
 export interface AudioState {

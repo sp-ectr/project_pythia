@@ -143,7 +143,7 @@ export function HomeScreen() {
       dispatch({ type: "SET_API_DATA_LOADED", result: {
         intro: "Душа, ищущая опоры в потоках кода и золота, вы пришли к порогу, где зеркала отражают не то, что вы желаете видеть, а то, что вы боитесь признать.",
         conclusion: "Офер придет не как подарок, а как трофей, добытый в схватке.",
-        card_interpretations: [],
+        cards_interpretation: [],
       }});
     }, 2500 + Math.random() * 3000);
   };
@@ -677,7 +677,7 @@ export function HomeScreen() {
                         result: {
                           intro: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris.",
                           conclusion: "At vero eos et accusamus et iusto odio dignissimos ducimus qui blanditiis praesentium voluptatum deleniti atque corrupti quos dolores et quas molestias excepturi sint occaecati cupiditate non provident.",
-                          card_interpretations: mockCards,
+                          cards_interpretation: mockCards,
                         },
                       });
                       switchScene("result");
@@ -690,10 +690,10 @@ export function HomeScreen() {
                   />
                 )}
 
-                {scene === "result" && state.sessionResult?.card_interpretations && (
+                {scene === "result" && state.sessionResult?.cards_interpretation && (
                   <ResultScene
                     isVisible={sceneVisible}
-                    cards={state.sessionResult.card_interpretations}
+                    cards={state.sessionResult.cards_interpretation}
                     intro={state.sessionResult.intro}
                     conclusion={state.sessionResult.conclusion}
                     onScrollToTop={scrollToTop}

@@ -88,6 +88,8 @@ async def get_user(
                 language_code=user_data.get("language_code", "ru"),
                 tokens=1
             )
+            session.add(user)
+            await session.flush()
         except IntegrityError:
             await session.rollback()
             logger.info(f"Registration race condition handled for tg_id={tg_id}. Fetching existing user.")
