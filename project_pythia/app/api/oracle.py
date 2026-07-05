@@ -1,6 +1,6 @@
 import logging
 from uuid import UUID
-
+import html
 from fastapi import Request, UploadFile, Form, File
 from fastapi import APIRouter, HTTPException
 from fastapi import Depends
@@ -45,10 +45,12 @@ async def ask_oracle(
             raise HTTPException(403, "No tokens left")
 
     if voice:
+        if voice.size > 256_000:
+            logger.warning(f"User_id={user.id} tried to upload too large voice file: {voice.size} bytes")
+            raise HTTPException(413, "Max 10 sec (file size too large).")
+
         audio_bytes = await voice.read()
-        if len(audio_bytes) > 256_000:
-            raise HTTPException(413, "Max 10 sec.")
-        question = await whisper.transcribe(audio_bytes)
+        question = await whisper.transcribe(audio_bytes, filename=voice.filename)
 
     if not question:
         raise HTTPException(422, "No data in question!")
@@ -64,19 +66,43 @@ async def ask_oracle(
 
     oracle_res = await llm_service.get_reading(question, spread_text)
 
-    # Минусуем токен если не безопасно и даем страйк
+    if oracle_res.cards_interpretation:
+        for i, card in enumerate(spread):
+            if i < len(oracle_res.cards_interpretation):
+                oracle_res.cards_interpretation[i].card_id = card.card_id
+                oracle_res.cards_interpretation[i].card_name = card.card_name
+
+    # НЕ минусуем токен если не безопасно и даем страйк
     if not oracle_res.is_safe:
         logger.warning(
             f"Unsafe response for user_id={user.id} (tg_id={user.tg_id}): "
             f"reason={oracle_res.refusal_reason!r}"
         )
-        await session.execute(
-            update(User)
-            .where(User.id == user.id, User.tokens > 0)
-            .values(tokens=User.tokens - 1, strikes=User.strikes + 1)
+
+        if user.tg_id not in settings.bot.admin_ids:
+
+            new_strikes = user.strikes + 1
+
+            is_active = False if new_strikes >= 3 else True
+
+            await session.execute(
+                update(User)
+                .where(User.id == user.id)
+                .values(strikes=new_strikes, is_active=is_active)
+            )
+            await session.commit()
+
+            if not is_active:
+                logger.warning(
+                    f"User_id={user.id} (tg_id={user.tg_id}) has been BANNED (reached {new_strikes} strikes)")
+
+        return AskPythiaResponse(
+            reading_id=None,
+            is_safe=False,
+            refusal_reason=oracle_res.refusal_reason,
+            strikes=user.strikes if user.tg_id in settings.bot.admin_ids else new_strikes,
+            is_active=user.is_active if user.tg_id in settings.bot.admin_ids else is_active,
         )
-        await session.commit()
-        return AskPythiaResponse(reading_id=None, is_safe=False, refusal_reason=oracle_res.refusal_reason)
 
     try:
         if user.tg_id not in settings.bot.admin_ids:
@@ -155,15 +181,17 @@ async def get_history(
 @router.post("/send-to-chat/{reading_id}", response_model=SendChatResponse)
 @limiter.limit("5/minute")
 async def send_to_chat(
-        request: Request,
-        reading_id: UUID,
-        background_tasks: BackgroundTasks,
-        user: User = Depends(get_user),
-        session: AsyncSession = Depends(get_session)
+    request: Request,
+    reading_id: UUID,
+    background_tasks: BackgroundTasks,
+    user: User =Depends(get_user),
+    session: AsyncSession =Depends(get_session)
 ):
     result = await session.execute(
-        select(Reading)
-        .where(Reading.id == reading_id, Reading.user_id == user.id)
+        select(Reading).where(
+            Reading.id == reading_id,
+            Reading.user_id == user.id,
+        )
     )
     reading = result.scalar_one_or_none()
 
@@ -172,28 +200,60 @@ async def send_to_chat(
         raise HTTPException(status_code=404, detail="Spread not found or access denied")
 
     interp_data = reading.interpretation
-    intro = interp_data.get("intro", "")
-    conclusion = interp_data.get("conclusion", "")
 
-    msg_text = f"🔮 <b>Твое послание от Пифии:</b>\n\n<i>{intro}</i>\n\n"
+    intro = html.escape(interp_data.get("intro", ""))
+    conclusion = html.escape(interp_data.get("conclusion", ""))
+
+    messages = []
+
+    current_message = (
+        f"🔮 <b>Твое послание от Пифии:</b>\n\n"
+        f"<i>{intro}</i>\n\n"
+    )
+
+    MAX_LEN = 4000  # небольшой запас до лимита Telegram (4096)
 
     for card in interp_data.get("cards_interpretation", []):
-        position = card.get("position")
-        meaning = card.get("position_meaning", "")
-        name = card.get("card_name", "Неизвестная карта")
+        position = html.escape(str(card.get("position", "")))
+        meaning = html.escape(card.get("position_explanation", ""))
+        name = html.escape(card.get("card_name", "Неизвестная карта"))
         reversed_flag = " (перевернутая)" if card.get("is_reversed") else ""
+        text = html.escape(card.get("text", ""))
 
-        text = card.get("text", "")
-
-        msg_text += (
-            f"🎴 <b>{position}. {meaning}</b>\n"
+        card_block = (
+            f"🎴 <b>{position}</b>\n"
+            f"<i>{meaning}</i>\n"
             f"<b>{name}{reversed_flag}</b>\n"
             f"{text}\n\n"
         )
 
-    msg_text += f"✨ <b>Итог:</b>\n{conclusion}"
+        if len(current_message) + len(card_block) > MAX_LEN:
+            messages.append(current_message)
+            current_message = card_block
+        else:
+            current_message += card_block
 
-    logger.info(f"Sending reading {reading_id} to chat for user_id={user.id} (tg_id={user.tg_id})")
-    background_tasks.add_task(telegram_adapter.send_message, user.tg_id, msg_text)
+    conclusion_block = f"✨ <b>Итог:</b>\n{conclusion}"
 
-    return SendChatResponse(status="ok", message="Отправлено в чат")
+    if len(current_message) + len(conclusion_block) > MAX_LEN:
+        messages.append(current_message)
+        messages.append(conclusion_block)
+    else:
+        current_message += conclusion_block
+        messages.append(current_message)
+
+    logger.info(
+        f"Sending reading {reading_id} to chat for user_id={user.id} (tg_id={user.tg_id})"
+    )
+
+    for message in messages:
+        background_tasks.add_task(
+            telegram_adapter.send_message,
+            user.tg_id,
+            message,
+        )
+
+    return SendChatResponse(
+        status="ok",
+        message="Отправлено в чат",
+    )

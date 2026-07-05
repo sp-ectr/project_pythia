@@ -2,9 +2,11 @@ import { useState, useEffect } from "react";
 import { TerminalButton } from "../components/ui/TerminalButton";
 import { playSound } from "../utils/sound";
 import { useDecrypt } from "../hooks/useDecrypt";
+import { sendToChat } from "../services/oracleApi";
 
 interface FeedbackSceneProps {
   isVisible: boolean;
+  readingId: string | null;
   onSubmit: (rating: number, text: string) => void;
   onSkip: () => void;
   nodeId?: string;
@@ -100,6 +102,7 @@ function StarRating({
 
 export function FeedbackScene({
   isVisible,
+  readingId,
   onSubmit,
   onSkip,
   nodeId = "471019051",
@@ -123,7 +126,7 @@ export function FeedbackScene({
     }
     const newReview: Review = {
       id: Date.now(),
-      user: `node_${nodeId.slice(-4)}`,
+      user: `node_${String(nodeId).slice(-4)}`,
       rating,
       text: text || "Без комментария",
       date: new Date().toISOString().split("T")[0],
@@ -132,6 +135,10 @@ export function FeedbackScene({
     setReviews([newReview, ...reviews]);
     setSubmitted(true);
     onSubmit(rating, text);
+
+    if (readingId) {
+      sendToChat(readingId).catch(() => {});
+    }
   };
 
   if (!isVisible) return null;

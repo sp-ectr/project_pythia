@@ -13,7 +13,7 @@ export function BootScreen({ onComplete }: BootScreenProps) {
   useEffect(() => {
     const fullText = `> ПОДКЛЮЧЕНИЕ К НЕЙРОСЕТИ..
 > ОБХОД ПРОТОКОЛОВ БЕЗОПАСНОСТИ..
-> КАЛИБРОВКА МОДУЛЯ ORACLE V0.1
+> КАЛИБРОВКА МОДУЛЯ ORACLE V0.2
 
 > СИСТЕМА ГОТОВА.`;
 

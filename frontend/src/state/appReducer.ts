@@ -27,7 +27,7 @@ export interface GenerationState {
 
 export interface CardInterpretation {
   position: number;
-  position_meaning: string;
+  position_explanation: string;
   card_id: number;
   card_name: string;
   is_reversed: boolean;
@@ -35,9 +35,13 @@ export interface CardInterpretation {
 }
 
 export interface SessionResult {
+  reading_id: string | null;
   intro: string;
   conclusion: string;
   cards_interpretation: CardInterpretation[];
+  refusalReason: string | null;
+  strikes: number;
+  is_active: boolean;
 }
 
 export interface AudioState {
@@ -178,7 +182,6 @@ export function appReducer(state: AppState, action: AppAction): AppState {
     case "TRIGGER_MATRIX_READING":
       return {
         ...state,
-        tokensBalance: state.tokensBalance - 1,
         isReading: true,
         generationState: {
           ...state.generationState,

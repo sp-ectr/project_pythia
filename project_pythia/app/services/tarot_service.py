@@ -44,6 +44,7 @@ class TarotService:
             spread.append(CardDraw(
                 position=position,
                 meaning=POSITIONS[position],
+                card_id=card.id,
                 card_name=card.name_ru,
                 card_summary=", ".join(keywords),
                 is_reversed=is_reversed

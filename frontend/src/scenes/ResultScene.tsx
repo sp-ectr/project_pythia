@@ -7,34 +7,21 @@ import { playSound } from "../utils/sound";
 import backImg from "../assets/back.webp";
 
 const POSITION_TITLES: Record<number, string> = {
-  1: "1 — Карта (суть текущего момента)",
-  2: "2 — Карта препятствия или усилителя",
-  3: "3 — Карта корня (прошлое)",
-  4: "4 — Карта недавнего прошлого",
-  5: "5 — Карта цели (осознанное направление)",
-  6: "6 — Карта ближайшего будущего",
-  7: "7 — Карта внутреннего состояния",
-  8: "8 — Карта окружения",
-  9: "9 — Карта надежд и страхов",
-  10: "10 — Карта итога",
-};
-
-const POSITION_EXPLANATIONS: Record<number, string> = {
-  1: 'это "снимок системы сейчас", как выглядит ситуация прямо в этой точке без оценок;',
-  2: "то, что либо тормозит процесс, либо наоборот подталкивает его и меняет динамику;",
-  3: "базовый сценарий или установка, из которой всё выросло и продолжает тянуться;",
-  4: "последний важный импульс или событие, которое сдвинуло ситуацию в текущее состояние;",
-  5: "то, как человек сам себе объясняет, куда он идёт и чего хочет;",
-  6: "инерция процесса, куда всё естественно движется, если ничего не менять;",
-  7: "как человек сейчас ощущает себя внутри ситуации, эмоционально и ментально;",
-  8: "внешние люди, условия и давление среды, которые формируют контекст;",
-  9: "смешанная внутренняя модель результата, где одновременно есть желание и избегание;",
-  10: "вероятный финал текущей траектории, если система продолжит двигаться так же.",
+  1: "1 — Где ты находишься сейчас",
+  2: "2 — Что помогает или мешает",
+  3: "3 — Откуда идут корни ситуации",
+  4: "4 — Что осталось позади",
+  5: "5 — К чему стремится твоя душа",
+  6: "6 — Что ждет впереди",
+  7: "7 — Что происходит внутри тебя",
+  8: "8 — Что происходит вокруг тебя",
+  9: "9 — Чего ты боишься и на что надеешься",
+  10: "10 — К чему ведет этот путь",
 };
 
 interface CardInterpretation {
   position: number;
-  position_meaning: string;
+  position_explanation: string;
   card_id: number;
   card_name: string;
   is_reversed: boolean;
@@ -46,6 +33,8 @@ interface ResultSceneProps {
   cards: CardInterpretation[];
   intro?: string;
   conclusion?: string;
+  refusalReason?: string | null;
+  strikes?: number;
   onScrollToTop?: () => void;
   onShowFeedback?: () => void;
   onReset: () => void;
@@ -69,6 +58,8 @@ export function ResultScene({
   cards,
   intro,
   conclusion,
+  refusalReason,
+  strikes = 0,
   onScrollToTop,
   onShowFeedback,
   onReset,
@@ -155,7 +146,7 @@ export function ResultScene({
       activeText = intro || "";
     } else if (step === "card_intro") {
       activeTitle = POSITION_TITLES[card.position] || "";
-      activeText = POSITION_EXPLANATIONS[card.position] || "";
+      activeText = card.position_explanation || "";
     } else if (step === "oracle_conclusion") {
       activeTitle = "✨ ФИНАЛЬНЫЙ ВЕРДИКТ ПИФИИ";
       activeText = conclusion || "";
@@ -198,6 +189,46 @@ export function ResultScene({
   }, [currentIndex, isVisible, step, card?.position, intro, conclusion]);
 
   if (!isVisible) return null;
+
+  if (refusalReason) {
+    return (
+      <div className="h-full flex flex-col items-center justify-center px-6">
+        <div className="text-center">
+          <div className="text-sm text-rose-400/80 tracking-widest uppercase mb-4 animate-pulse">
+            ▸ ДОСТУП ЗАКРЫТ
+          </div>
+          <div className="border border-rose-500/30 bg-rose-950/20 p-6 rounded-md mb-6">
+            <p className="text-rose-300/80 text-[13px] font-mono leading-relaxed tracking-wide">
+              {refusalReason}
+            </p>
+          </div>
+          {strikes > 0 && strikes < 3 && (
+            <div className="border border-amber-500/30 bg-amber-950/20 p-4 rounded-md mb-4">
+              <p className="text-amber-300/80 text-[12px] font-mono leading-relaxed tracking-wide">
+                ▸ ПРЕДУПРЕЖДЕНИЕ: {strikes} / 3 нарушения.
+              </p>
+              <p className="text-amber-400/60 text-[11px] font-mono tracking-wider mt-1">
+                При достижении лимита доступ будет перманентно заблокирован.
+              </p>
+            </div>
+          )}
+          {strikes >= 3 && (
+            <div className="border border-rose-500/50 bg-rose-950/40 p-4 rounded-md mb-4">
+              <p className="text-rose-300 text-[12px] font-mono leading-relaxed tracking-wide animate-pulse">
+                ▸ ПЕРМАНЕНТНАЯ БЛОКИРОВКА АКТИВИРОВАНА
+              </p>
+            </div>
+          )}
+          <p className="text-slate-500 text-[11px] font-mono tracking-wider mb-8">
+            Ваш баланс не изменён.
+          </p>
+          <TerminalButton variant="cancel" onClick={onReset}>
+            [ вернуться ]
+          </TerminalButton>
+        </div>
+      </div>
+    );
+  }
 
   const showCard = step === "card_intro" || step === "card_reading";
 

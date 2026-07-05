@@ -1,4 +1,6 @@
-﻿name: Deploy Pythia Frontend
+﻿# .github/workflows/deploy.yml
+
+name: Deploy Pythia Frontend and Backend
 
 on:
   push:
@@ -13,6 +15,8 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4.2.2
 
+
+      # ЭТАП 1: Быстрая сборка React фронтенда с кэшем
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
@@ -26,7 +30,8 @@ jobs:
           npm ci
           npm run build
 
-      - name: Deploy to VPS
+      # ЭТАП 2: Деплой скомпилированного фронта в Nginx-папку
+      - name: Deploy Frontend to VPS
         uses: easingthemes/ssh-deploy@main
         with:
           SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
@@ -36,10 +41,31 @@ jobs:
           REMOTE_USER: ${{ secrets.SERVER_USER }}
           TARGET: "/home/spectr/projects/pythia/frontend/"
 
-      - name: Fix permissions
+      # ЭТАП 3: Деплой файлов бэкенда (копируем корень без мусора)
+      - name: Deploy Backend to VPS
+        uses: easingthemes/ssh-deploy@main
+        with:
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+          ARGS: "-rlgoDzvO --delete"
+          # Исключаем фронт, логи и локальные среды, чтобы не забивать сервер
+          EXCLUDE: "/frontend/, /.git/, /.venv/, /logs/, /node_modules/"
+          SOURCE: "./"
+          REMOTE_HOST: ${{ secrets.SERVER_IP }}
+          REMOTE_USER: ${{ secrets.SERVER_USER }}
+          TARGET: "/home/spectr/projects/pythia/backend/"
+
+      # ЭТАП 4: Пересборка контейнеров и миграции на сервере по SSH
+      - name: Rebuild Containers and Run Migrations
         uses: appleboy/ssh-action@v1
         with:
           host: ${{ secrets.SERVER_IP }}
           username: ${{ secrets.SERVER_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
-          script: chmod -R 755 /home/spectr/projects/pythia/frontend/
+          script: |
+            cd /home/spectr/projects/pythia
+            # 1. Принудительно пересобираем контейнер API с новым прилетевшим кодом
+            docker compose up -d --build pythia_api
+            # 2. Автоматически накатываем миграции Alembic внутри контейнера API
+            docker compose exec -T pythia_api alembic upgrade head
+            # 3. Сбрасываем права доступа на папки фронта (твоя родная строка)
+            chmod -R 755 /home/spectr/projects/pythia/frontend/

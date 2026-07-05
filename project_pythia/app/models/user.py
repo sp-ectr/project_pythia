@@ -1,7 +1,6 @@
 from datetime import datetime
 
-
-
+from project_pythia.app.core.config import settings
 from project_pythia.app.models.base import Base
 from sqlalchemy import BigInteger, String, DateTime, func
 from sqlalchemy.orm import Mapped, mapped_column, relationship
@@ -13,7 +12,7 @@ class User(Base):
     __tablename__ = "users"
 
     id: Mapped[int] = mapped_column(primary_key = True)
-    tg_id: Mapped[int] = mapped_column(BigInteger, unique=True, index=True)
+    tg_id: Mapped[int] = mapped_column(BigInteger, unique=True)
     username: Mapped[str] =  mapped_column(String(64))
     tokens: Mapped[int] = mapped_column(default=1)
     strikes: Mapped[int] = mapped_column(default=0)
@@ -24,6 +23,10 @@ class User(Base):
     )
 
     readings: Mapped[list["Reading"]] = relationship(back_populates="user", cascade="all, delete-orphan")
+
+    @property
+    def is_admin(self) -> bool:
+        return self.tg_id in settings.bot.admin_ids
 
     def __repr__(self) -> str:
         return f"User(id={self.id}, tg_id={self.tg_id}, username={self.username})"

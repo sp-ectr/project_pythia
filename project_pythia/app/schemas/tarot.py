@@ -19,6 +19,7 @@ class TarotCard(BaseModel):
 class CardDraw(BaseModel):
     position: int
     meaning: str
+    card_id: int
     card_name: str
     card_summary: str
     is_reversed: bool

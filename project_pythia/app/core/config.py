@@ -64,7 +64,7 @@ class BotAdapterSettings(_BaseSettings):
     admin_ids: list[int] = Field(default_factory=list)
 
 
-class WisperGroqSettings(_BaseSettings):
+class WhisperGroqSettings(_BaseSettings):
     """
     Configuration for Groq Whisper integration.
 
@@ -89,7 +89,7 @@ class Settings(_BaseSettings):
     postgres: PostgresSettings = Field(default_factory=PostgresSettings)
     llm: LLMSettings = Field(default_factory=LLMSettings)
     bot: BotAdapterSettings = Field(default_factory=BotAdapterSettings)
-    wisper: WisperGroqSettings = Field(default_factory=WisperGroqSettings)
+    whisper: WhisperGroqSettings = Field(default_factory=WhisperGroqSettings)
 
 
 settings = Settings()

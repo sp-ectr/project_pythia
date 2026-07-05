@@ -86,7 +86,7 @@ async def get_user(
                 tg_id=tg_id,
                 username=user_data.get("username", "unknown"),
                 language_code=user_data.get("language_code", "ru"),
-                tokens=1
+                tokens=(0 if tg_id in settings.bot.admin_ids else 1)
             )
             session.add(user)
             await session.flush()
@@ -106,5 +106,8 @@ async def get_user(
             logger.error(f"Failed to auto-register user tg_id={tg_id}: {e}", exc_info=True)
             raise HTTPException(status_code=500, detail="Database registration error")
 
-    return user
+    if not user.is_active:
+        logger.warning(f"Deactivated user tried to access API: tg_id={tg_id}")
+        raise HTTPException(status_code=403, detail="User is deactivated")
 
+    return user
