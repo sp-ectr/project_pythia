@@ -63,9 +63,7 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
             cd /home/spectr/projects/pythia
-            # 1. Принудительно пересобираем контейнер API с новым прилетевшим кодом
-            docker compose up -d --build pythia_api
-            # 2. Автоматически накатываем миграции Alembic внутри контейнера API
-            docker compose exec -T pythia_api alembic upgrade head
-            # 3. Сбрасываем права доступа на папки фронта (твоя родная строка)
-            chmod -R 755 /home/spectr/projects/pythia/frontend/
+              docker compose up -d --build pythia_api
+              docker compose restart frontend_nginx
+              docker compose exec -T pythia_api alembic upgrade head
+              chmod -R 755 /home/spectr/projects/pythia/frontend/

@@ -98,6 +98,7 @@ export function HomeScreen() {
     strikes: 0,
   });
   const [banned, setBanned] = useState(false);
+  const [offline, setOffline] = useState(false);
 
   const { currentScene: scene, isReading, tokensBalance, inputState, generationState } = state;
   const canProceed = generationState.apiDone && generationState.minTimeoutDone;
@@ -110,6 +111,8 @@ export function HomeScreen() {
       console.error("fetchUserInfo error:", err);
       if (err.message === "USER_BANNED") {
         setBanned(true);
+      } else {
+        setOffline(true);
       }
     });
   }, []);
@@ -418,6 +421,29 @@ export function HomeScreen() {
                   ▸ ACCESS TO ORACLE: PERMANENTLY DENIED
                 </p>
               </div>
+            </div>
+          </div>
+        )}
+        {offline && (
+          <div className="absolute inset-0 z-[70] flex items-center justify-center bg-black/95 px-8">
+            <div className="text-center">
+              <div className="text-sm text-rose-500/80 tracking-widest uppercase mb-4 animate-pulse">
+                ▸ СВЯЗЬ С МАТРИЦЕЙ ПОТЕРЯНА
+              </div>
+              <div className="border border-rose-500/30 bg-rose-950/20 p-5 rounded-md mb-6">
+                <p className="text-rose-300/80 text-[13px] font-mono leading-relaxed tracking-wide">
+                  ▸ КОД_ОШИБКИ: CONNECTION_REFUSED
+                </p>
+                <p className="text-rose-300/80 text-[13px] font-mono leading-relaxed tracking-wide mt-2">
+                  ▸ Оракул временно недоступен. Проверьте соединение с сетью.
+                </p>
+              </div>
+              <button
+                onClick={() => window.location.reload()}
+                className="w-full py-3 font-mono text-xs uppercase tracking-[0.2em] border border-cyan-500/30 text-cyan-400 bg-black rounded-md hover:border-cyan-400 transition"
+              >
+                [ ПЕРЕПОДКЛЮЧЕНИЕ ]
+              </button>
             </div>
           </div>
         )}
