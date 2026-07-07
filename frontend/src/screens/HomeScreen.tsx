@@ -14,7 +14,8 @@ import { TokensScene } from "../scenes/TokensScene";
 import { ResultScene } from "../scenes/ResultScene";
 import { ProtocolScene } from "../scenes/ProtocolScene";
 import { FeedbackScene } from "../scenes/FeedbackScene";
-import { askOracle, fetchUserInfo, type UserMeResponse } from "../services/oracleApi";
+import { askOracle, fetchUserInfo, fetchHistory, type UserMeResponse } from "../services/oracleApi";
+import { HistoryScene } from "../scenes/HistoryScene";
 import {
   appReducer,
   initialState,
@@ -99,6 +100,7 @@ export function HomeScreen() {
   });
   const [banned, setBanned] = useState(false);
   const [offline, setOffline] = useState(false);
+  const [hasHistory, setHasHistory] = useState(false);
 
   const { currentScene: scene, isReading, tokensBalance, inputState, generationState } = state;
   const canProceed = generationState.apiDone && generationState.minTimeoutDone;
@@ -115,6 +117,9 @@ export function HomeScreen() {
         setOffline(true);
       }
     });
+    fetchHistory(1, 0).then((data) => {
+      setHasHistory(data.length > 0);
+    }).catch(() => {});
   }, []);
 
   const refreshUser = () => {
@@ -633,6 +638,17 @@ export function HomeScreen() {
                   >
                     [ КУПИТЬ ТОКЕНЫ ]
                   </button>
+                  {hasHistory && (
+                    <button
+                      onClick={() => {
+                        playSound("/sounds/start.mp3", 0.5);
+                        switchScene("history");
+                      }}
+                      className="transition-colors duration-300 underline decoration-dotted underline-offset-4 text-xs self-start text-cyan-400 hover:text-cyan-300 mt-2"
+                    >
+                      [ ИСТОРИЯ РАСКЛАДОВ ]
+                    </button>
+                  )}
                 </div>
               )}
 
@@ -767,6 +783,34 @@ export function HomeScreen() {
                       dispatch({ type: "TERMINATE_SESSION" });
                     }}
                     nodeId={state.nodeId}
+                  />
+                )}
+
+                {scene === "history" && (
+                  <HistoryScene
+                    isVisible={sceneVisible}
+                    onSelectReading={(reading) => {
+                      if (reading.interpretation) {
+                        scrollToTop();
+                        setSceneVisible(false);
+                        setTimeout(() => {
+                          dispatch({ 
+                            type: "LOAD_HISTORY_READING", 
+                            result: {
+                              reading_id: reading.reading_id,
+                              intro: reading.interpretation.intro || "",
+                              conclusion: reading.interpretation.conclusion || "",
+                              cards_interpretation: reading.interpretation.cards_interpretation || [],
+                              refusalReason: reading.interpretation.refusal_reason || null,
+                              strikes: reading.strikes,
+                              is_active: reading.is_active,
+                            }
+                          });
+                          setSceneVisible(true);
+                        }, 350);
+                      }
+                    }}
+                    onBack={() => switchScene("greeting")}
                   />
                 )}
               </div>

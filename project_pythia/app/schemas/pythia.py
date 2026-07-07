@@ -1,4 +1,5 @@
 from uuid import UUID
+from datetime import datetime
 
 from pydantic import BaseModel, Field, ConfigDict
 
@@ -42,6 +43,7 @@ class AskPythiaResponse(BaseModel):
     interpretation: OracleResponse | None = None
     strikes: int = Field(default=0, description="Current strike count after this request")
     is_active: bool = Field(default=True, description="Whether the user account is still active")
+    created_at: datetime | None = None
 
 
 class SendChatResponse(BaseModel):

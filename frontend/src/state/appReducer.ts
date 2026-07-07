@@ -7,7 +7,8 @@ export type Scene =
   | "loading"
   | "result"
   | "protocol"
-  | "feedback";
+  | "feedback"
+  | "history";
 
 export type InputMode = "choose" | "voice" | "text";
 
@@ -78,7 +79,8 @@ export type AppAction =
   | { type: "SET_LOADING_STATUS"; status: string }
   | { type: "REFRESH_TOKENS_BALANCE"; balance: number }
   | { type: "START_SESSION" }
-  | { type: "TERMINATE_SESSION" };
+  | { type: "TERMINATE_SESSION" }
+  | { type: "LOAD_HISTORY_READING"; result: SessionResult };
 
 const TOTAL_CARDS = 77;
 
@@ -253,6 +255,14 @@ export function appReducer(state: AppState, action: AppAction): AppState {
         nodeId: state.nodeId,
         tokensBalance: state.tokensBalance,
         audioState: state.audioState,
+      };
+
+    case "LOAD_HISTORY_READING":
+      return {
+        ...state,
+        currentScene: "result",
+        isReading: true,
+        sessionResult: action.result,
       };
 
     default:

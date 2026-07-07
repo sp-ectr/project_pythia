@@ -32,6 +32,7 @@ export interface AskPythiaResponse {
   interpretation?: OracleResponse | null;
   strikes: number;
   is_active: boolean;
+  created_at?: string;
 }
 
 const getTelegramInitData = (): string => {
@@ -109,6 +110,24 @@ export async function sendToChat(readingId: string): Promise<{ status: string; m
 
   if (!response.ok) {
     throw new Error("SEND_TO_CHAT_FAILED");
+  }
+
+  return response.json();
+}
+
+export async function fetchHistory(limit = 10, offset = 0): Promise<AskPythiaResponse[]> {
+  const initData = getTelegramInitData();
+
+  const response = await fetch(`/api/oracle/history?limit=${limit}&offset=${offset}`, {
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+      "X-TG-Data": initData,
+    },
+  });
+
+  if (!response.ok) {
+    throw new Error("FETCH_HISTORY_FAILED");
   }
 
   return response.json();

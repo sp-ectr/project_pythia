@@ -45,9 +45,9 @@ async def ask_oracle(
             raise HTTPException(403, "No tokens left")
 
     if voice:
-        if voice.size > 256_000:
+        if voice.size > 2_000_000:
             logger.warning(f"User_id={user.id} tried to upload too large voice file: {voice.size} bytes")
-            raise HTTPException(413, "Max 10 sec (file size too large).")
+            raise HTTPException(413, "Voice file too large (max 2MB).")
 
         audio_bytes = await voice.read()
         question = await whisper.transcribe(audio_bytes, filename=voice.filename)
@@ -173,7 +173,8 @@ async def get_history(
         AskPythiaResponse(
             reading_id=r.id,
             is_safe=True,
-            interpretation=r.interpretation
+            interpretation=r.interpretation,
+            created_at=r.created_at
         ) for r in readings
     ]
 
