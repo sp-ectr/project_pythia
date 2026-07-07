@@ -790,7 +790,8 @@ export function HomeScreen() {
                   <HistoryScene
                     isVisible={sceneVisible}
                     onSelectReading={(reading) => {
-                      if (reading.interpretation) {
+                      const interp = reading.interpretation;
+                      if (interp) {
                         scrollToTop();
                         setSceneVisible(false);
                         setTimeout(() => {
@@ -798,10 +799,10 @@ export function HomeScreen() {
                             type: "LOAD_HISTORY_READING", 
                             result: {
                               reading_id: reading.reading_id,
-                              intro: reading.interpretation.intro || "",
-                              conclusion: reading.interpretation.conclusion || "",
-                              cards_interpretation: reading.interpretation.cards_interpretation || [],
-                              refusalReason: reading.interpretation.refusal_reason || null,
+                              intro: interp.intro || "",
+                              conclusion: interp.conclusion || "",
+                              cards_interpretation: interp.cards_interpretation || [],
+                              refusalReason: interp.refusal_reason || null,
                               strikes: reading.strikes,
                               is_active: reading.is_active,
                             }
