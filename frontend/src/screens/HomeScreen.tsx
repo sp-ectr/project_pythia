@@ -195,15 +195,7 @@ export function HomeScreen() {
           is_active: response.is_active,
         }});
       } else if (!response.is_safe) {
-        dispatch({ type: "SET_API_DATA_LOADED", result: {
-          reading_id: null,
-          intro: "",
-          conclusion: "",
-          cards_interpretation: [],
-          refusalReason: response.refusal_reason || "ЗАПРОС ОТКЛОНЁН МАТРИЦЕЙ",
-          strikes: response.strikes,
-          is_active: response.is_active,
-        }});
+        setOracleError(response.refusal_reason || "Запрос отклонён матрицей.");
       }
     }).catch((err) => {
       console.error("Oracle API error:", err);
