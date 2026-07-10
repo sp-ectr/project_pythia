@@ -14,7 +14,7 @@ import { TokensScene } from "../scenes/TokensScene";
 import { ResultScene } from "../scenes/ResultScene";
 import { ProtocolScene } from "../scenes/ProtocolScene";
 import { FeedbackScene } from "../scenes/FeedbackScene";
-import { askOracle, fetchUserInfo, fetchHistory, type UserMeResponse } from "../services/oracleApi";
+import { askOracle, fetchUserInfo, transcribe, type UserMeResponse } from "../services/oracleApi";
 import { HistoryScene } from "../scenes/HistoryScene";
 import {
   appReducer,
@@ -86,6 +86,7 @@ export function HomeScreen() {
   const typingActiveRef = useRef(true);
 
   const cardFlipRef = useRef<ReturnType<typeof setInterval>>(null);
+  const loadingTimersRef = useRef<ReturnType<typeof setTimeout>[]>([]);
 
   const [mutedState, setMutedState] = useState(false);
 
@@ -100,7 +101,7 @@ export function HomeScreen() {
   });
   const [banned, setBanned] = useState(false);
   const [offline, setOffline] = useState(false);
-  const [hasHistory, setHasHistory] = useState(false);
+  const [oracleError, setOracleError] = useState<string | null>(null);
 
   const { currentScene: scene, isReading, tokensBalance, inputState, generationState } = state;
   const canProceed = generationState.apiDone && generationState.minTimeoutDone;
@@ -117,9 +118,6 @@ export function HomeScreen() {
         setOffline(true);
       }
     });
-    fetchHistory(1, 0).then((data) => {
-      setHasHistory(data.length > 0);
-    }).catch(() => {});
   }, []);
 
   const refreshUser = () => {
@@ -167,7 +165,11 @@ export function HomeScreen() {
     switchScene("loading");
     dispatch({ type: "TRIGGER_MATRIX_READING" });
 
-    setTimeout(() => dispatch({ type: "SET_MIN_TIMEOUT_REACHED" }), MIN_LOADING_MS);
+    loadingTimersRef.current.forEach(clearTimeout);
+    loadingTimersRef.current = [];
+
+    const t1 = setTimeout(() => dispatch({ type: "SET_MIN_TIMEOUT_REACHED" }), MIN_LOADING_MS);
+    loadingTimersRef.current.push(t1);
 
     const statuses = [
       "СКАНИРОВАНИЕ_МАТРИЦЫ",
@@ -176,7 +178,8 @@ export function HomeScreen() {
       "КОНСУЛЬТАЦИЯ_С_ОРАКУЛОМ",
     ];
     statuses.forEach((s, i) => {
-      setTimeout(() => dispatch({ type: "SET_LOADING_STATUS", status: s }), i * 1000);
+      const t = setTimeout(() => dispatch({ type: "SET_LOADING_STATUS", status: s }), i * 1000);
+      loadingTimersRef.current.push(t);
     });
 
     askOracle(question).then((response) => {
@@ -204,51 +207,10 @@ export function HomeScreen() {
       }
     }).catch((err) => {
       console.error("Oracle API error:", err);
-    });
-  };
-
-  const startLoadingWithVoice = (voiceBlob: Blob) => {
-    dispatch({ type: "SET_TEXT_QUESTION", text: "" });
-    switchScene("loading");
-    dispatch({ type: "TRIGGER_MATRIX_READING" });
-
-    setTimeout(() => dispatch({ type: "SET_MIN_TIMEOUT_REACHED" }), MIN_LOADING_MS);
-
-    const statuses = [
-      "СКАНИРОВАНИЕ_МАТРИЦЫ",
-      "ВЫРАВНИВАНИЕ_ВЕКТОРОВ",
-      "ЧТЕНИЕ_ЭНТРОПИИ",
-      "КОНСУЛЬТАЦИЯ_С_ОРАКУЛОМ",
-    ];
-    statuses.forEach((s, i) => {
-      setTimeout(() => dispatch({ type: "SET_LOADING_STATUS", status: s }), i * 1000);
-    });
-
-    askOracle(undefined, voiceBlob, "voice.ogg").then((response) => {
-      refreshUser();
-      if (response.is_safe && response.interpretation) {
-        dispatch({ type: "SET_API_DATA_LOADED", result: {
-          reading_id: response.reading_id,
-          intro: response.interpretation.intro || "",
-          conclusion: response.interpretation.conclusion || "",
-          cards_interpretation: response.interpretation.cards_interpretation || [],
-          refusalReason: null,
-          strikes: response.strikes,
-          is_active: response.is_active,
-        }});
-      } else if (!response.is_safe) {
-        dispatch({ type: "SET_API_DATA_LOADED", result: {
-          reading_id: null,
-          intro: "",
-          conclusion: "",
-          cards_interpretation: [],
-          refusalReason: response.refusal_reason || "ЗАПРОС ОТКЛОНЁН МАТРИЦЕЙ",
-          strikes: response.strikes,
-          is_active: response.is_active,
-        }});
-      }
-    }).catch((err) => {
-      console.error("Oracle API error (voice):", err);
+      loadingTimersRef.current.forEach(clearTimeout);
+      loadingTimersRef.current = [];
+      if (cardFlipRef.current) clearInterval(cardFlipRef.current);
+      setOracleError("Ошибка связи с Оракулом. Попробуйте отправить вопрос позже.");
     });
   };
 
@@ -297,6 +259,20 @@ export function HomeScreen() {
     }
   }, [isReading]);
 
+  const transcribeVoice = async (voiceBlob: Blob) => {
+    dispatch({ type: "SET_TEXT_QUESTION", text: "▸ Распознавание речи..." });
+    dispatch({ type: "CHANGE_INPUT_METHOD", mode: "text" });
+    try {
+      const response = await transcribe(voiceBlob, "voice.ogg");
+      if (response.question) {
+        dispatch({ type: "SET_TEXT_QUESTION", text: response.question });
+      }
+    } catch {
+      dispatch({ type: "SET_TEXT_QUESTION", text: "" });
+      setOracleError("Ошибка распознавания голоса. Попробуйте записать снова.");
+    }
+  };
+
   const handleVoice = async () => {
     dispatch({ type: "SET_MIC_ERROR", error: "" });
     try {
@@ -323,7 +299,7 @@ export function HomeScreen() {
         const audioBlob = new Blob(audioChunksRef.current, { type: "audio/ogg" });
         audioChunksRef.current = [];
         if (audioBlob.size > 0) {
-          startLoadingWithVoice(audioBlob);
+          transcribeVoice(audioBlob);
         }
       };
 
@@ -363,14 +339,14 @@ export function HomeScreen() {
         playSound("/sounds/blip.mp3", 0.1);
       }
       if (si < subtitleFull.length) {
-        subtitleTimeout = setTimeout(typeSubtitle, 80);
+        subtitleTimeout = setTimeout(typeSubtitle, 50);
         timers.push(subtitleTimeout);
       } else {
-        const t = setTimeout(typeHomeText, 600);
+        const t = setTimeout(typeHomeText, 350);
         timers.push(t);
       }
     };
-    const subtitleStartTimer = setTimeout(typeSubtitle, 1400);
+    const subtitleStartTimer = setTimeout(typeSubtitle, 800);
     timers.push(subtitleStartTimer);
     const homeFullText = `СОСТОЯНИЕ_ОРАКУЛА: АКТИВЕН\nСИНХРОНИЗАЦИЯ_МАТРИЦЫ: УСТАНОВЛЕНА\nОЖИДАНИЕ_ВВОДА...`;
     let hi = 0;
@@ -389,7 +365,7 @@ export function HomeScreen() {
         homeTimeout = setTimeout(() => {
           setHomePaused(false);
           typeHomeText();
-        }, 500);
+        }, 300);
         timers.push(homeTimeout);
         return;
       }
@@ -397,7 +373,7 @@ export function HomeScreen() {
         playSound("/sounds/blip.mp3", 0.1);
       }
       setHomePaused(false);
-      homeTimeout = setTimeout(typeHomeText, 70);
+      homeTimeout = setTimeout(typeHomeText, 45);
       timers.push(homeTimeout);
     };
     return () => {
@@ -412,6 +388,30 @@ export function HomeScreen() {
         className="flex flex-col relative overflow-hidden border border-slate-800 shadow-[0_0_60px_rgba(0,0,0,0.9)] bg-black"
         style={{ width: "390px", height: "844px" }}
       >
+        {oracleError && (
+          <div className="absolute inset-0 z-[70] flex items-center justify-center bg-black/95 px-8">
+            <div className="text-center">
+              <div className="text-sm text-amber-400/80 tracking-widest uppercase mb-4 animate-pulse">
+                ▸ ОРАКУЛ НЕ ОТВЕЧАЕТ
+              </div>
+              <div className="border border-amber-500/30 bg-amber-950/20 p-5 rounded-md mb-6">
+                <p className="text-amber-300/80 text-[13px] font-mono leading-relaxed tracking-wide">
+                  {oracleError}
+                </p>
+              </div>
+              <button
+                onClick={() => {
+                  playSound("/sounds/start.mp3", 0.5);
+                  setOracleError(null);
+                  dispatch({ type: "TERMINATE_SESSION" });
+                }}
+                className="w-full py-3 font-mono text-xs uppercase tracking-[0.2em] border border-cyan-500/30 text-cyan-400 bg-black rounded-md hover:border-cyan-400 transition"
+              >
+                [ ПОПРОБОВАТЬ СНОВА ]
+              </button>
+            </div>
+          </div>
+        )}
         {banned && (
           <div className="absolute inset-0 z-[70] flex items-center justify-center bg-black/95 px-8">
             <div className="text-center">
@@ -638,17 +638,20 @@ export function HomeScreen() {
                   >
                     [ КУПИТЬ ТОКЕНЫ ]
                   </button>
-                  {hasHistory && (
-                    <button
-                      onClick={() => {
-                        playSound("/sounds/start.mp3", 0.5);
-                        switchScene("history");
-                      }}
-                      className="transition-colors duration-300 underline decoration-dotted underline-offset-4 text-xs self-start text-cyan-400 hover:text-cyan-300 mt-2"
-                    >
-                      [ ИСТОРИЯ РАСКЛАДОВ ]
-                    </button>
-                  )}
+                </div>
+              )}
+
+              {scene !== "result" && scene !== "loading" && (
+                <div className="ml-[45%] mr-[-6%] mb-5">
+                  <button
+                    onClick={() => {
+                      playSound("/sounds/start.mp3", 0.5);
+                      switchScene("history");
+                    }}
+                    className="w-full py-2.5 font-mono text-[10px] uppercase tracking-[0.3em] text-cyan-300/80 bg-black border border-cyan-500/30 rounded-sm hover:border-cyan-400/60 hover:text-cyan-200 hover:shadow-[0_0_12px_rgba(34,211,238,0.15)] transition-all duration-300 active:scale-[0.97]"
+                  >
+                    // ИСТОРИЯ РАСКЛАДОВ
+                  </button>
                 </div>
               )}
 

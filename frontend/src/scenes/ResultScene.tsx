@@ -178,9 +178,9 @@ export function ResultScene({
             clearInterval(textTimer);
             setTypingDone(true);
           }
-        }, 50);
+        }, 30);
       }
-    }, 60);
+    }, 40);
 
     return () => {
       clearInterval(titleTimer);

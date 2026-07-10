@@ -44,13 +44,13 @@ export function GreetingScene({
           playSound("/sounds/blip.mp3", 0.1);
         }
         i++;
-        timer = setTimeout(type, 65);
+        timer = setTimeout(type, 40);
       } else {
         setGreetingDone(true);
       }
     };
 
-    timer = setTimeout(type, 300);
+    timer = setTimeout(type, 200);
     return () => { mounted = false; clearTimeout(timer); };
   }, [isVisible]);
 

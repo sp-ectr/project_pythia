@@ -28,6 +28,7 @@ export interface OracleResponse {
 export interface AskPythiaResponse {
   reading_id: string | null;
   is_safe: boolean;
+  question?: string | null;
   refusal_reason?: string | null;
   interpretation?: OracleResponse | null;
   strikes: number;
@@ -110,6 +111,26 @@ export async function sendToChat(readingId: string): Promise<{ status: string; m
 
   if (!response.ok) {
     throw new Error("SEND_TO_CHAT_FAILED");
+  }
+
+  return response.json();
+}
+
+export async function transcribe(voiceBlob: Blob, voiceFilename: string): Promise<{ question: string }> {
+  const initData = getTelegramInitData();
+  const formData = new FormData();
+  formData.append("voice", voiceBlob, voiceFilename);
+
+  const response = await fetch("/api/oracle/transcribe", {
+    method: "POST",
+    headers: {
+      "X-TG-Data": initData,
+    },
+    body: formData,
+  });
+
+  if (!response.ok) {
+    throw new Error("TRANSCRIBE_FAILED");
   }
 
   return response.json();

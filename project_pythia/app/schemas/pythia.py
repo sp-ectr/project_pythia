@@ -39,6 +39,7 @@ class AskPythiaResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)
     reading_id: UUID | None
     is_safe: bool
+    question: str | None = None
     refusal_reason: str | None = None
     interpretation: OracleResponse | None = None
     strikes: int = Field(default=0, description="Current strike count after this request")

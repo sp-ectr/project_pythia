@@ -72,7 +72,30 @@ async def ask_oracle(
                 oracle_res.cards_interpretation[i].card_id = card.card_id
                 oracle_res.cards_interpretation[i].card_name = card.card_name
 
-    # НЕ минусуем токен если не безопасно и даем страйк
+    # ВСЕГДА списываем токен (кроме админа) — юзер заплатил за сессию
+    if user.tg_id not in settings.bot.admin_ids:
+        result = await session.execute(
+            update(User)
+            .where(User.id == user.id)
+            .where(User.tokens > 0)
+            .values(tokens=User.tokens - 1)
+            .returning(User.tokens)
+        )
+        updated = result.scalar_one_or_none()
+
+        if updated is None:
+            await session.rollback()
+            logger.warning(
+                f"Race condition: tokens depleted mid-request for user_id={user.id} (tg_id={user.tg_id})"
+            )
+            raise HTTPException(403, "No tokens left (race condition protected)")
+
+        logger.info(
+            f"Successfully debited 1 token from user_id={user.id} (tg_id={user.tg_id}). "
+            f"Tokens remaining: {updated}"
+        )
+
+    # Если unsafe — даем страйк, сохраняем reading с null interpretation
     if not oracle_res.is_safe:
         logger.warning(
             f"Unsafe response for user_id={user.id} (tg_id={user.tg_id}): "
@@ -80,9 +103,7 @@ async def ask_oracle(
         )
 
         if user.tg_id not in settings.bot.admin_ids:
-
             new_strikes = user.strikes + 1
-
             is_active = False if new_strikes >= 3 else True
 
             await session.execute(
@@ -99,34 +120,13 @@ async def ask_oracle(
         return AskPythiaResponse(
             reading_id=None,
             is_safe=False,
+            question=question,
             refusal_reason=oracle_res.refusal_reason,
             strikes=user.strikes if user.tg_id in settings.bot.admin_ids else new_strikes,
             is_active=user.is_active if user.tg_id in settings.bot.admin_ids else is_active,
         )
 
     try:
-        if user.tg_id not in settings.bot.admin_ids:
-            result = await session.execute(
-                update(User)
-                .where(User.id == user.id)
-                .where(User.tokens > 0)
-                .values(tokens=User.tokens - 1)
-                .returning(User.tokens)
-            )
-            updated = result.scalar_one_or_none()
-
-            if updated is None:
-                await session.rollback()
-                logger.warning(
-                    f"Race condition: tokens depleted mid-request for user_id={user.id} (tg_id={user.tg_id})"
-                )
-                raise HTTPException(403, "No tokens left (race condition protected)")
-
-            logger.info(
-                f"Successfully debited 1 token from user_id={user.id} (tg_id={user.tg_id}). "
-                f"Tokens remaining: {updated}"
-            )
-
         # Сохраняем результат гадания
         new_reading = Reading(
             user_id=user.id,
@@ -143,6 +143,7 @@ async def ask_oracle(
         return AskPythiaResponse(
             reading_id=new_reading.id,
             is_safe=True,
+            question=question,
             interpretation=oracle_res
         )
     except HTTPException:
@@ -258,3 +259,18 @@ async def send_to_chat(
         status="ok",
         message="Отправлено в чат",
     )
+
+
+@router.post("/transcribe")
+@limiter.limit("5/minute")
+async def transcribe(
+        request: Request,
+        voice: UploadFile = File(...),
+        user: User = Depends(get_user),
+):
+    if voice.size > 2_000_000:
+        raise HTTPException(413, "Voice file too large (max 2MB).")
+
+    audio_bytes = await voice.read()
+    question = await whisper.transcribe(audio_bytes, filename=voice.filename)
+    return {"question": question}
