@@ -47,7 +47,6 @@ jobs:
         with:
           SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
           ARGS: "-rlgoDzvO --delete"
-          # Исключаем фронт, логи и локальные среды, чтобы не забивать сервер
           EXCLUDE: "/frontend/, /.git/, /.venv/, /logs/, /node_modules/, .env"
           SOURCE: "./"
           REMOTE_HOST: ${{ secrets.SERVER_IP }}

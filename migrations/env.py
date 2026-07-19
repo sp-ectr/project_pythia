@@ -13,7 +13,7 @@ from project_pythia.app.models.base import Base
 from project_pythia.app.core.config import settings
 from project_pythia.app.models.user import User
 from project_pythia.app.models.readings import Reading
-
+from project_pythia.app.models.payment import Payment
 from alembic import context
 
 config = context.config

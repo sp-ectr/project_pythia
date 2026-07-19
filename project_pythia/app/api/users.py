@@ -2,7 +2,7 @@ import logging
 from fastapi import APIRouter, Depends
 from project_pythia.app.core.security import get_user
 from project_pythia.app.models.user import User
-from project_pythia.app.schemas.user import UserMeResponse
+from project_pythia.app.schemas.user_me_response import UserMeResponse
 
 router = APIRouter(prefix="/users", tags=["Users"])
 logger = logging.getLogger(__name__)

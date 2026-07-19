@@ -63,19 +63,45 @@ export async function fetchUserInfo(): Promise<UserMeResponse> {
   return response.json();
 }
 
-export async function askOracle(
-  question?: string,
-  voiceBlob?: Blob,
-  voiceFilename?: string
-): Promise<AskPythiaResponse> {
+export async function createInvoice(bundleId: string): Promise<{ invoice_link: string }> {
+  const initData = getTelegramInitData();
+
+  const response = await fetch("/api/oracle/invoice", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "X-TG-Data": initData,
+    },
+    body: JSON.stringify({ bundle_id: bundleId }),
+  });
+
+  if (!response.ok) {
+    throw new Error("CREATE_INVOICE_FAILED");
+  }
+
+  return response.json();
+}
+
+export async function transcribe(voiceBlob: Blob, voiceFilename: string): Promise<{ question: string }> {
   const initData = getTelegramInitData();
   const formData = new FormData();
+  formData.append("voice", voiceBlob, voiceFilename);
 
-  if (voiceBlob && voiceFilename) {
-    formData.append("voice", voiceBlob, voiceFilename);
-  } else if (question) {
-    formData.append("question", question);
+  const response = await fetch("/api/oracle/transcribe", {
+    method: "POST",
+    headers: {
+      "X-TG-Data": initData,
+    },
+    body: formData,
+  });
+
+  if (!response.ok) {
+    throw new Error("TRANSCRIBE_FAILED");
   }
+
+  return response.json();
+}
+
 
   const response = await fetch("/api/oracle/ask", {
     method: "POST",

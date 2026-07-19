@@ -1,7 +1,9 @@
 from uuid import UUID
 from datetime import datetime
+from project_pythia.app.schemas.bundle import BundleId
 
 from pydantic import BaseModel, Field, ConfigDict
+
 
 
 class CardInterpretation(BaseModel):
@@ -50,3 +52,10 @@ class AskPythiaResponse(BaseModel):
 class SendChatResponse(BaseModel):
     status: str
     message: str
+
+
+class InvoiceRequest(BaseModel):
+    bundle_id: BundleId
+
+class InvoiceResponse(BaseModel):
+    invoice_link: str

@@ -1,6 +1,8 @@
 import logging
 from uuid import UUID
 import html
+
+from aiogram.types import LabeledPrice
 from fastapi import Request, UploadFile, Form, File
 from fastapi import APIRouter, HTTPException
 from fastapi import Depends
@@ -10,9 +12,11 @@ from starlette.background import BackgroundTasks
 
 from project_pythia.app.core.config import settings
 from project_pythia.app.core.security import get_user
-from project_pythia.app.schemas.pythia import AskPythiaResponse, SendChatResponse
+from project_pythia.app.schemas.payment_create import PaymentCreate
+from project_pythia.app.schemas.pythia import AskPythiaResponse, SendChatResponse, InvoiceResponse, InvoiceRequest
 from project_pythia.app.core.db import get_session
 from project_pythia.app.services.llm_client import llm_service
+from project_pythia.app.services.payment_service import payment_service
 from project_pythia.app.services.tarot_service import tarot_service
 from project_pythia.app.services.telegram_service import telegram_adapter
 from project_pythia.app.services.whisper_service import whisper
@@ -274,3 +278,36 @@ async def transcribe(
     audio_bytes = await voice.read()
     question = await whisper.transcribe(audio_bytes, filename=voice.filename)
     return {"question": question}
+
+
+@router.post("/invoice", response_model=InvoiceResponse)
+async def create_invoice(
+        payload: InvoiceRequest,
+        user: User = Depends(get_user),
+        session: AsyncSession = Depends(get_session)
+):
+    try:
+        bundle = payload.bundle_id
+        payment_data = PaymentCreate(
+            user_id=user.id,
+            bundle_id=bundle,
+            tokens=bundle.tokens,
+            stars=bundle.stars,
+        )
+
+        payment = await payment_service.create_payment(session, payment_data)
+        await session.commit()
+
+        invoice_link = await telegram_adapter.bot.create_invoice_link(
+            title=f"Токены Оракула ({bundle.tokens} шт.)",
+            description=f"Пополнение баланса Пифии на {bundle.tokens} токенов.",
+            prices=[LabeledPrice(label="Telegram Stars", amount=bundle.stars)],
+            payload=str(payment.id),
+            provider_token="",
+            currency="XTR",
+        )
+        return InvoiceResponse(invoice_link=invoice_link)
+    except Exception as e:
+        await session.rollback()
+        logger.error(f"Invoice error for tg_id={user.tg_id}: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail="Invoice generation error")

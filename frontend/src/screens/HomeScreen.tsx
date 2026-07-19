@@ -14,7 +14,7 @@ import { TokensScene } from "../scenes/TokensScene";
 import { ResultScene } from "../scenes/ResultScene";
 import { ProtocolScene } from "../scenes/ProtocolScene";
 import { FeedbackScene } from "../scenes/FeedbackScene";
-import { askOracle, fetchUserInfo, transcribe, type UserMeResponse } from "../services/oracleApi";
+import { askOracle, fetchUserInfo, transcribe, createInvoice, type UserMeResponse } from "../services/oracleApi";
 import { HistoryScene } from "../scenes/HistoryScene";
 import {
   appReducer,
@@ -261,6 +261,7 @@ export function HomeScreen() {
       }
     } catch {
       dispatch({ type: "SET_TEXT_QUESTION", text: "" });
+      dispatch({ type: "CHANGE_INPUT_METHOD", mode: "choose" });
       setOracleError("Ошибка распознавания голоса. Попробуйте записать снова.");
     }
   };
@@ -688,7 +689,27 @@ export function HomeScreen() {
                   <TokensScene
                     isVisible={sceneVisible}
                     onRecharge={(bundleId) => {
-                      console.log("Purchase bundle:", bundleId);
+                      playSound("/sounds/start.mp3", 0.5);
+                      createInvoice(bundleId)
+                        .then((res) => {
+                          // @ts-ignore
+                          const webApp = window.Telegram?.WebApp;
+                          if (!webApp || !webApp.openInvoice) {
+                            dispatch({ type: "SET_MIC_ERROR", error: "ОШИБКА: API ТЕЛЕГРАМА НЕДОСТУПНО" });
+                            return;
+                          }
+                          webApp.openInvoice(res.invoice_link, (status: string) => {
+                            if (status === "paid") {
+                              playSound("/sounds/start.mp3", 0.5);
+                              refreshUser();
+                              switchScene("greeting");
+                            }
+                          });
+                        })
+                        .catch((err) => {
+                          console.error("Failed to create invoice:", err);
+                          setOracleError("Не удалось создать invoice. Попробуйте позже.");
+                        });
                     }}
                     onCancel={() => {
                       if (!user.is_admin && tokensBalance <= 0) {
