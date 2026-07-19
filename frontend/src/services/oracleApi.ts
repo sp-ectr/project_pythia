@@ -44,101 +44,49 @@ const getTelegramInitData = (): string => {
 
 export async function fetchUserInfo(): Promise<UserMeResponse> {
   const initData = getTelegramInitData();
-
   const response = await fetch("/api/users/me", {
     method: "GET",
-    headers: {
-      "Content-Type": "application/json",
-      "X-TG-Data": initData,
-    },
+    headers: { "Content-Type": "application/json", "X-TG-Data": initData },
   });
-
   if (!response.ok) {
-    if (response.status === 403) {
-      throw new Error("USER_BANNED");
-    }
+    if (response.status === 403) throw new Error("USER_BANNED");
     throw new Error("AUTH_FAILED");
   }
-
   return response.json();
 }
 
-export async function createInvoice(bundleId: string): Promise<{ invoice_link: string }> {
-  const initData = getTelegramInitData();
-
-  const response = await fetch("/api/oracle/invoice", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "X-TG-Data": initData,
-    },
-    body: JSON.stringify({ bundle_id: bundleId }),
-  });
-
-  if (!response.ok) {
-    throw new Error("CREATE_INVOICE_FAILED");
-  }
-
-  return response.json();
-}
-
-export async function transcribe(voiceBlob: Blob, voiceFilename: string): Promise<{ question: string }> {
+export async function askOracle(
+  question?: string,
+  voiceBlob?: Blob,
+  voiceFilename?: string
+): Promise<AskPythiaResponse> {
   const initData = getTelegramInitData();
   const formData = new FormData();
-  formData.append("voice", voiceBlob, voiceFilename);
-
-  const response = await fetch("/api/oracle/transcribe", {
-    method: "POST",
-    headers: {
-      "X-TG-Data": initData,
-    },
-    body: formData,
-  });
-
-  if (!response.ok) {
-    throw new Error("TRANSCRIBE_FAILED");
+  if (voiceBlob && voiceFilename) {
+    formData.append("voice", voiceBlob, voiceFilename);
+  } else if (question) {
+    formData.append("question", question);
   }
-
-  return response.json();
-}
-
-
   const response = await fetch("/api/oracle/ask", {
     method: "POST",
-    headers: {
-      "X-TG-Data": initData,
-    },
+    headers: { "X-TG-Data": initData },
     body: formData,
   });
-
   if (!response.ok) {
-    if (response.status === 403) {
-      throw new Error("NO_TOKENS_OR_BANNED");
-    }
-    if (response.status === 413) {
-      throw new Error("FILE_TOO_LARGE");
-    }
+    if (response.status === 403) throw new Error("NO_TOKENS_OR_BANNED");
+    if (response.status === 413) throw new Error("FILE_TOO_LARGE");
     throw new Error("API_ERROR");
   }
-
   return response.json();
 }
 
 export async function sendToChat(readingId: string): Promise<{ status: string; message: string }> {
   const initData = getTelegramInitData();
-
   const response = await fetch(`/api/oracle/send-to-chat/${readingId}`, {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "X-TG-Data": initData,
-    },
+    headers: { "Content-Type": "application/json", "X-TG-Data": initData },
   });
-
-  if (!response.ok) {
-    throw new Error("SEND_TO_CHAT_FAILED");
-  }
-
+  if (!response.ok) throw new Error("SEND_TO_CHAT_FAILED");
   return response.json();
 }
 
@@ -146,36 +94,32 @@ export async function transcribe(voiceBlob: Blob, voiceFilename: string): Promis
   const initData = getTelegramInitData();
   const formData = new FormData();
   formData.append("voice", voiceBlob, voiceFilename);
-
   const response = await fetch("/api/oracle/transcribe", {
     method: "POST",
-    headers: {
-      "X-TG-Data": initData,
-    },
+    headers: { "X-TG-Data": initData },
     body: formData,
   });
-
-  if (!response.ok) {
-    throw new Error("TRANSCRIBE_FAILED");
-  }
-
+  if (!response.ok) throw new Error("TRANSCRIBE_FAILED");
   return response.json();
 }
 
 export async function fetchHistory(limit = 10, offset = 0): Promise<AskPythiaResponse[]> {
   const initData = getTelegramInitData();
-
   const response = await fetch(`/api/oracle/history?limit=${limit}&offset=${offset}`, {
     method: "GET",
-    headers: {
-      "Content-Type": "application/json",
-      "X-TG-Data": initData,
-    },
+    headers: { "Content-Type": "application/json", "X-TG-Data": initData },
   });
+  if (!response.ok) throw new Error("FETCH_HISTORY_FAILED");
+  return response.json();
+}
 
-  if (!response.ok) {
-    throw new Error("FETCH_HISTORY_FAILED");
-  }
-
+export async function createInvoice(bundleId: string): Promise<{ invoice_link: string }> {
+  const initData = getTelegramInitData();
+  const response = await fetch("/api/oracle/invoice", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", "X-TG-Data": initData },
+    body: JSON.stringify({ bundle_id: bundleId }),
+  });
+  if (!response.ok) throw new Error("CREATE_INVOICE_FAILED");
   return response.json();
 }
