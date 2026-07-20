@@ -3,6 +3,7 @@ from uuid import UUID
 
 from aiogram import Bot, Dispatcher
 from aiogram.client.default import DefaultBotProperties
+from aiogram.filters import Command
 from aiogram.types import PreCheckoutQuery, Message
 from aiogram import F
 from project_pythia.app.core.db import async_session_maker
@@ -83,6 +84,43 @@ class TelegramAdapter:
                 except Exception as e:
                     await session.rollback()
                     logger.error(f"Failed to process webhook for payment {pay_uuid}: {e}", exc_info=True)
+
+        @self.dp.message(Command("terms"))
+        async def cmd_terms(message: Message):
+            terms_text = (
+                "📜 <b>СИСТЕМНЫЙ ПРОТОКОЛ // ПОЛЬЗОВАТЕЛЬСКОЕ СОГЛАШЕНИЕ</b>\n\n"
+                "1. <b>Идентификация:</b> Проект «Пифия» функционирует как автономный ИИ-диагност, "
+                "анализирующий вероятностные векторы вашей жизненной траектории через 78-битный код древних архетипов.\n\n"
+                "2. <b>Ограничение ответственности:</b> Все диагностические отчеты, расклады и выводы формируются "
+                "нейросетевой моделью и носят исключительно информационно-развлекательный характер. "
+                "Они не являются медицинскими, юридическими или финансовыми предписаниями. "
+                "Вы несете полную ответственность за свои жизненные решения.\n\n"
+                "3. <b>Экономика:</b> Инициация одной сессии диагностики списывает 1 токен. Приобретенные токены "
+                "и звезды Telegram Stars не подлежат возврату, обмену на фиатную валюту или компенсации."
+            )
+            await message.answer(terms_text)
+
+        @self.dp.message(Command("support"))
+        async def cmd_support(message: Message):
+            support_text = (
+                "🛠 <b>ОТЛАДОЧНЫЙ МОДУЛЬ // ТЕХНИЧЕСКАЯ ПОДДЕРЖКА</b>\n\n"
+                "Если вы обнаружили системный сбой, баг интерфейса или аномалию в рендере карт:\n"
+                "▸ Свяжитесь с руководителем проекта напрямую: @sp_ectr_67\n"
+                "▸ Время работы отладочной линии: 10:00 — 20:00 (UTC+3).\n\n"
+                "<i>Примечание: Поддержка Telegram не занимается обработкой запросов по работе бота.</i>"
+            )
+            await message.answer(support_text)
+
+        @self.dp.message(Command("paysupport"))
+        async def cmd_paysupport(message: Message):
+            paysupport_text = (
+                "💳 <b>ФИНАНСОВЫЙ МОДУЛЬ // ТРАНЗАКЦИОННЫЙ АУДИТ</b>\n\n"
+                "По вопросам начисления токенов, сбоев платежного шлюза Telegram Stars или возвратов:\n"
+                "▸ Отправьте UUID транзакции или скриншот квитанции администратору: @sp_ectr_67\n"
+                "▸ Мы проведем ручной аудит логов PostgreSQL и решим проблему в кратчайшие сроки.\n\n"
+                "<i>Для возврата Stars используется метод refundStarPayment API Telegram.</i>"
+            )
+            await message.answer(paysupport_text)
 
 
 
