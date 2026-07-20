@@ -33,6 +33,10 @@ class TelegramAdapter:
     def _register_payment_handlers(self):
         @self.dp.pre_checkout_query()
         async def process_pre_checkout_query(pre_checkout_query: PreCheckoutQuery):
+            logger.info(
+                f"PRE_CHECKOUT RECEIVED! User={pre_checkout_query.from_user.id}, "
+                f"Payload={pre_checkout_query.invoice_payload}, Amount={pre_checkout_query.total_amount}"
+            )
             try:
                 pay_uuid = UUID(pre_checkout_query.invoice_payload)
                 webhook_data = TelegramPaymentWebhook(
@@ -57,6 +61,11 @@ class TelegramAdapter:
         async def process_successful_payment(message: Message):
             payment_info = message.successful_payment
             tg_id = message.from_user.id
+            logger.info(
+                f"SUCCESSFUL_PAYMENT RECEIVED! User={tg_id}, "
+                f"ChargeID={payment_info.telegram_payment_charge_id}, "
+                f"Amount={payment_info.total_amount}, Currency={payment_info.currency}"
+            )
 
             try:
                 pay_uuid = UUID(payment_info.invoice_payload)
@@ -117,7 +126,7 @@ class TelegramAdapter:
                 "💳 <b>ФИНАНСОВЫЙ МОДУЛЬ // ТРАНЗАКЦИОННЫЙ АУДИТ</b>\n\n"
                 "По вопросам начисления токенов, сбоев платежного шлюза Telegram Stars или возвратов:\n"
                 "▸ Отправьте UUID транзакции или скриншот квитанции администратору: @sp_ectr_67\n"
-                "▸ Мы проведем ручной аудит логов PostgreSQL и решим проблему в кратчайшие сроки.\n\n"
+                "▸ Мы проведем ручной аудит логов и решим проблему в кратчайшие сроки.\n\n"
                 "<i>Для возврата Stars используется метод refundStarPayment API Telegram.</i>"
             )
             await message.answer(paysupport_text)
