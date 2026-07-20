@@ -303,8 +303,7 @@ async def create_invoice(
             description=f"Пополнение баланса Пифии на {bundle.tokens} токенов.",
             prices=[LabeledPrice(label="Telegram Stars", amount=bundle.stars)],
             payload=str(payment.id),
-            provider_token="",
-            currency="XTR",
+            currency="XTR"
         )
         return InvoiceResponse(invoice_link=invoice_link)
     except Exception as e:
