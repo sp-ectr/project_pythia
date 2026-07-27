@@ -130,6 +130,12 @@ export function TokensScene({
         })}
       </div>
 
+      <div className="border border-cyan-500/20 bg-cyan-950/5 p-3 rounded-md mb-4 text-[11px] font-mono leading-relaxed text-cyan-400/80">
+        <p className="font-bold mb-1">▸ ИНФОРМАЦИЯ О ТРАНЗАКЦИЯХ:</p>
+        <p>Оплата производится во внутренней валюте Telegram Stars (★).</p>
+        <p className="mt-1">Если ваш баланс ★ равен нулю или возникает ошибка платежа, вы можете мгновенно и без комиссии пополнить баланс Stars в официальном боте <a href="https://t.me/PremiumBot" className="underline text-cyan-300">@PremiumBot</a> с любой карты РФ через СБП.</p>
+      </div>
+
       <TerminalButton variant="cancel" onClick={onCancel}>
         [ отмена ]
       </TerminalButton>
