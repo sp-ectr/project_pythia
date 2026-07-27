@@ -302,6 +302,7 @@ async def create_invoice(
             title=f"Токены Оракула ({bundle.tokens} шт.)",
             description=f"Пополнение баланса Пифии на {bundle.tokens} токенов.",
             prices=[LabeledPrice(label="Telegram Stars", amount=bundle.stars)],
+            provider_token="",
             payload=str(payment.id),
             currency="XTR"
         )
