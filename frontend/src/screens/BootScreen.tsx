@@ -14,6 +14,7 @@ export function BootScreen({ onComplete }: BootScreenProps) {
     const fullText = `> ПОДКЛЮЧЕНИЕ К НЕЙРОСЕТИ..
 > ОБХОД ПРОТОКОЛОВ БЕЗОПАСНОСТИ..
 > КАЛИБРОВКА МОДУЛЯ ORACLE V0.2
+> ЕСЛИ ТЫ ВИДИШЬ ЭТО РЕВОРК УСПЕШНО ПРОШЕЛ
 
 > СИСТЕМА ГОТОВА.`;
 
